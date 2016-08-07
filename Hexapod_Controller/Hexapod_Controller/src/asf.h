@@ -52,6 +52,9 @@
  * running the ASF driver selector tool. Any changes will be discarded.
  */
 
+// From module: AFEC - Analog-Front-End Controller
+#include <afec.h>
+
 // From module: Common SAM compiler driver
 #include <compiler.h>
 #include <status_codes.h>
@@ -59,16 +62,72 @@
 // From module: Common build items for user board support templates
 #include <user_board.h>
 
+// From module: Delay routines
+#include <delay.h>
+
+// From module: FreeRTOS - kernel 8.2.3
+#include <FreeRTOS.h>
+#include <StackMacros.h>
+#include <croutine.h>
+#include <deprecated_definitions.h>
+#include <event_groups.h>
+#include <list.h>
+#include <mpu_wrappers.h>
+#include <portable.h>
+#include <projdefs.h>
+#include <queue.h>
+#include <semphr.h>
+#include <task.h>
+#include <timers.h>
+
 // From module: Generic board support
 #include <board.h>
 
+// From module: High Speed Multimedia Card Interface
+#include <hsmci.h>
+
 // From module: Interrupt management - SAM implementation
 #include <interrupt.h>
+
+// From module: PIO - Parallel Input/Output Controller
+#include <pio.h>
+
+// From module: PMC - Power Management Controller
+#include <pmc.h>
+#include <sleep.h>
 
 // From module: Part identification macros
 #include <parts.h>
 
 // From module: SAM FPU driver
 #include <fpu.h>
+
+// From module: SPI - Serial Peripheral Interface
+#include <spi.h>
+
+// From module: Sleep manager - SAM implementation
+#include <sam/sleepmgr.h>
+#include <sleepmgr.h>
+
+// From module: System Clock Control - SAMS70 implementation
+#include <sysclk.h>
+
+// From module: TWI - Two-wire Interface High Speed
+#include <twihs.h>
+
+// From module: UART - Univ. Async Rec/Trans
+#include <uart.h>
+
+// From module: USART - Univ. Syn Async Rec/Trans
+#include <usart.h>
+
+// From module: WDT - Watchdog Timer
+#include <wdt.h>
+
+// From module: XDMAC - XDMA Controller
+#include <xdmac.h>
+
+// From module: pio_handler support enabled
+#include <pio_handler.h>
 
 #endif // ASF_H
