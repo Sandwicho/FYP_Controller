@@ -20,27 +20,28 @@
     <OverrideVtor>false</OverrideVtor>
     <CacheFlash>true</CacheFlash>
     <ProgFlashFromRam>true</ProgFlashFromRam>
-    <RamSnippetAddress />
+    <RamSnippetAddress>0x20000000</RamSnippetAddress>
     <UncachedRange />
     <preserveEEPROM>true</preserveEEPROM>
-    <OverrideVtorValue />
+    <OverrideVtorValue>exception_table</OverrideVtorValue>
     <BootSegment>2</BootSegment>
     <eraseonlaunchrule>0</eraseonlaunchrule>
     <AsfFrameworkConfig>
       <framework-data>
         <options>
           <option id="common.boards" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="thirdparty.os.freertos.version" value="Add" config="8.2.3" content-id="Atmel.ASF" />
           <option id="common.services.delay" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam.drivers.pio" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam.drivers.hsmci" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.afec" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam.drivers.wdt" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam.drivers.hsmci" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam.drivers.pio" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam.drivers.pmc" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam.drivers.spi" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam.drivers.twihs" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.uart" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.usart" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam.drivers.spi" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam.drivers.pmc" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam.drivers.twihs" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam.drivers.wdt" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="thirdparty.os.freertos.version" value="Add" config="8.2.3" content-id="Atmel.ASF" />
+          <option id="sam.drivers.supc" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.utils.linker_scripts" value="Add" config="" content-id="Atmel.ASF" />
         </options>
         <configurations>
@@ -259,6 +260,8 @@
           <file path="src/ASF/thirdparty/freertos/freertos-8.2.3/Source/portable/GCC/ARM_CM7/r0p1/port.c" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.2.3\Source\portable\GCC\ARM_CM7\r0p1\port.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/freertos/freertos-8.2.3/Source/portable/GCC/ARM_CM7/r0p1/portmacro.h" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.2.3\Source\portable\GCC\ARM_CM7\r0p1\portmacro.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/freertos/freertos-8.2.3/Source/portable/MemMang/heap_1.c" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.2.3\Source\portable\MemMang\heap_1.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam/drivers/supc/supc.c" framework="" version="3.31.0" source="sam\drivers\supc\supc.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam/drivers/supc/supc.h" framework="" version="3.31.0" source="sam\drivers\supc\supc.h" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.31.0/common.applications.user_application.user_board.sams70n20/html/index.html" />
         <offline-documentation help="" />
@@ -269,6 +272,23 @@
         <board id="board.user_board.sams70n20" value="Add" config="" content-id="Atmel.ASF" />
       </framework-data>
     </AsfFrameworkConfig>
+    <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
+    <avrtoolserialnumber>J41800047209</avrtoolserialnumber>
+    <avrdeviceexpectedsignature>0xA1120C00</avrdeviceexpectedsignature>
+    <com_atmel_avrdbg_tool_atmelice>
+      <ToolOptions>
+        <InterfaceProperties>
+          <SwdClock>2000000</SwdClock>
+          <JtagDbgClock>7500000</JtagDbgClock>
+        </InterfaceProperties>
+        <InterfaceName>SWD</InterfaceName>
+      </ToolOptions>
+      <ToolType>com.atmel.avrdbg.tool.atmelice</ToolType>
+      <ToolNumber>J41800047209</ToolNumber>
+      <ToolName>Atmel-ICE</ToolName>
+    </com_atmel_avrdbg_tool_atmelice>
+    <avrtoolinterface>SWD</avrtoolinterface>
+    <avrtoolinterfaceclock>7500000</avrtoolinterfaceclock>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -319,6 +339,7 @@
       <Value>../src/ASF/sam/drivers/wdt</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/portable/GCC/ARM_CM7/r0p1</Value>
+      <Value>../src/ASF/sam/drivers/supc</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -370,6 +391,7 @@
       <Value>../src/ASF/sam/drivers/wdt</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/portable/GCC/ARM_CM7/r0p1</Value>
+      <Value>../src/ASF/sam/drivers/supc</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM7=true -DBOARD=USER_BOARD -Dprintf=iprintf -Dscanf=iscanf -D__FREERTOS__</armgcc.preprocessingassembler.general.AssemblerFlags>
@@ -404,6 +426,7 @@
       <Value>../src/ASF/sam/drivers/wdt</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/portable/GCC/ARM_CM7/r0p1</Value>
+      <Value>../src/ASF/sam/drivers/supc</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
@@ -458,6 +481,7 @@
       <Value>../src/ASF/sam/drivers/wdt</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/portable/GCC/ARM_CM7/r0p1</Value>
+      <Value>../src/ASF/sam/drivers/supc</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
@@ -510,6 +534,7 @@
       <Value>../src/ASF/sam/drivers/wdt</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/portable/GCC/ARM_CM7/r0p1</Value>
+      <Value>../src/ASF/sam/drivers/supc</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
@@ -545,6 +570,7 @@
       <Value>../src/ASF/sam/drivers/wdt</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/portable/GCC/ARM_CM7/r0p1</Value>
+      <Value>../src/ASF/sam/drivers/supc</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
@@ -576,6 +602,7 @@
     <Folder Include="src\ASF\sam\drivers\pio\" />
     <Folder Include="src\ASF\sam\drivers\pmc\" />
     <Folder Include="src\ASF\sam\drivers\spi\" />
+    <Folder Include="src\ASF\sam\drivers\supc\" />
     <Folder Include="src\ASF\sam\drivers\twihs\" />
     <Folder Include="src\ASF\sam\drivers\uart\" />
     <Folder Include="src\ASF\sam\drivers\usart\" />
@@ -630,6 +657,12 @@
     <Compile Include="src\ASF\sam\drivers\spi\spi.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\ASF\sam\drivers\supc\supc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\sam\drivers\supc\supc.h">
+      <SubType>compile</SubType>
+    </None>
     <Compile Include="src\ASF\sam\drivers\usart\usart.c">
       <SubType>compile</SubType>
     </Compile>

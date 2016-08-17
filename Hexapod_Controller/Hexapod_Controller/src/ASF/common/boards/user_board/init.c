@@ -30,4 +30,19 @@ void board_init(void)
 	 * for, e.g., the I/O pins. The initialization can rely on application-
 	 * specific board configuration, found in conf_board.h.
 	 */
+	
+	/* ######################################
+	   ######################################
+					Enable LEDS
+	   ######################################
+	   ###################################### */
+	//sendDebugString("LED INITIALIZATION - STARTED\n");
+		pio_set_peripheral(PIOB,PIO_TYPE_PIO_OUTPUT_1,1<<12);
+		pmc_enable_periph_clk(ID_PIOA);
+		pmc_enable_periph_clk(ID_PIOB);
+		pio_set_output(LED0,LOW,DISABLE,DISABLE);
+		pio_set_output(LED1,LOW,DISABLE,DISABLE);
+		//sendDebugString("LED INITIALIZATION - FINISHED\n");
+		
+		
 }

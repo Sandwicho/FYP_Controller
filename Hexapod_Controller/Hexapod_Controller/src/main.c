@@ -33,12 +33,53 @@
 #include <stdio.h>
 #include <string.h>
 
+//define task functions
+void Task1 (void*);
 
-int main (void)
-{
+//semaphores
+
+
+
+int main (void){
 	/* Insert system clock initialization code here (sysclk_init()). */
 
 	board_init();
+	xTaskCreate(Task1,"TASK1",200,NULL,1,NULL);
+	pio_set(LED0);
+	pio_set(LED1);
 
+	vTaskStartScheduler();
+	
+	
+	return 0;
 	/* Insert application code here, after the board has been initialized. */
 }
+
+
+void Task1 (void* pvParameters) {
+	int tg = 1;
+	
+	for( ;; ){
+	pio_clear(LED0);
+	pio_clear(LED1);
+	}
+	
+	/*for(;;){
+		if (tg){
+			pio_set(LED0);
+			pio_set(LED1);
+			tg = !tg;
+		}
+		else {
+			pio_clear(LED0);
+			pio_clear(LED1);
+			tg = !tg;
+		}
+		
+	}*/
+
+}
+	
+	
+	
+	
