@@ -105,6 +105,9 @@
 // From module: SPI - Serial Peripheral Interface
 #include <spi.h>
 
+// From module: SUPC - Supply Controller
+#include <supc.h>
+
 // From module: Sleep manager - SAM implementation
 #include <sam/sleepmgr.h>
 #include <sleepmgr.h>

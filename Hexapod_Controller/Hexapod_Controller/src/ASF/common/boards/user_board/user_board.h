@@ -21,7 +21,7 @@
 
 // External oscillator settings.
 // Uncomment and set correct values if external oscillator is used.
-
+#define BOARD_MCK 150000000
 // External oscillator frequency
 #define BOARD_XOSC_HZ          12000000
 
@@ -35,6 +35,10 @@
 
 // External oscillator startup time
 #define BOARD_XOSC_STARTUP_US  500000
+
+//define LED pins 
+#define LED0 PIOD,PIO_PD31
+#define LED1 PIOD,PIO_PD26
 
 
 #endif // USER_BOARD_H
