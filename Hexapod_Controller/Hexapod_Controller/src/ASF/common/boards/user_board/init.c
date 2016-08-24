@@ -25,6 +25,30 @@ void board_init(void)
 	sysclk_init();
 	delay_init(150000000);
 
+	/* ######################################
+	   ######################################
+					Enable UART
+	   ######################################
+	   ###################################### */
+	/*const sam_uart_opt_t usart_console_settings = {
+		USART_SERIAL_BAUDRATE,
+		USART_SERIAL_CHAR_LENGTH,
+		USART_SERIAL_PARITY,
+		USART_SERIAL_STOP_BIT,
+		US_MR_CHMODE_NORMAL
+	};
+	sysclk_enable_peripheral_clock(ID_UART1);
+	pmc_enable_periph_clk(ID_UART1);
+	uart_init(UART1, &usart_console_settings);
+	uart_enable(UART1);
+	uart_enable_tx(UART1);
+	uart_enable_rx(UART1);
+	uart_set_clock_divisor(UART1,(83/1)); //Pippin had GLOBAL_SLOWDOWN IT WAS VALUED 1
+	pmc_enable_periph_clk(ID_PIOA);
+	pio_set_peripheral(PIOD,PIO_TYPE_PIO_PERIPH_C,1<<3 | 1<<18);*/
+	//Test UART
+	//sendDebugString("MELLATRON9000 BOOT SEQUENCE\nUART CONSOLE STARTED ON UART4\nBaudRate: 115200\nBits: 8\nNo stop bits \n");
+	
 	
 	/* This function is meant to contain board-specific initialization code
 	 * for, e.g., the I/O pins. The initialization can rely on application-
@@ -37,12 +61,21 @@ void board_init(void)
 	   ######################################
 	   ###################################### */
 	//sendDebugString("LED INITIALIZATION - STARTED\n");
-		pio_set_peripheral(PIOB,PIO_TYPE_PIO_OUTPUT_1,1<<12);
-		pmc_enable_periph_clk(ID_PIOA);
-		pmc_enable_periph_clk(ID_PIOB);
+		//pio_set_peripheral(PIOB,PIO_TYPE_PIO_OUTPUT_1,1<<12);
+		//pmc_enable_periph_clk(ID_PIOA);
+		pmc_enable_periph_clk(ID_PIOD);
 		pio_set_output(LED0,LOW,DISABLE,DISABLE);
 		pio_set_output(LED1,LOW,DISABLE,DISABLE);
 		//sendDebugString("LED INITIALIZATION - FINISHED\n");
 		
+		
+		/* ######################################
+	   ######################################
+					Disable Watchdog
+	   ######################################
+	   ###################################### */
+		//sendDebugString("WATCHDOG INITIALIZATION - STARTED\n");
+		wdt_disable(WDT);
+		//sendDebugString("WATCHDOG INITIALIZATION - FINISHED\n");
 		
 }

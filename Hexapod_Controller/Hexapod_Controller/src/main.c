@@ -59,12 +59,10 @@ int main (void){
 void Task1 (void* pvParameters) {
 	int tg = 1;
 	
-	for( ;; ){
 	pio_clear(LED0);
 	pio_clear(LED1);
-	}
 	
-	/*for(;;){
+	for(;;){
 		if (tg){
 			pio_set(LED0);
 			pio_set(LED1);
@@ -76,7 +74,9 @@ void Task1 (void* pvParameters) {
 			tg = !tg;
 		}
 		
-	}*/
+		
+		vTaskDelay(1000);
+	}
 
 }
 	
