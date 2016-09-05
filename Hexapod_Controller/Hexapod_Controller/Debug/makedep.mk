@@ -2,6 +2,8 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+src\ASF\common\services\serial\usart_serial.c
+
 src\ASF\common\services\sleepmgr\sam\sleepmgr.c
 
 src\ASF\sam\drivers\hsmci\hsmci.c
@@ -59,6 +61,8 @@ src\ASF\sam\utils\cmsis\sams70\source\templates\gcc\startup_sams70.c
 src\ASF\sam\utils\cmsis\sams70\source\templates\system_sams70.c
 
 src\ASF\sam\utils\syscalls\gcc\syscalls.c
+
+src\Debug.c
 
 src\main.c
 

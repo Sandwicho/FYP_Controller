@@ -11,6 +11,12 @@
 #include <asf.h>
 #include <board.h>
 #include <conf_board.h>
+#include "../Debug.h"
+
+#define UART_SERIAL_BAUDRATE		9600
+#define UART_SERIAL_CHAR_LENGTH		US_MR_CHRL_8_BIT
+#define UART_SERIAL_PARITY			US_MR_PAR_NO
+#define	UART_SERIAL_STOP_BIT		US_MR_NBSTOP_1_BIT
 
 void board_init(void)
 {
@@ -30,12 +36,12 @@ void board_init(void)
 					Enable UART
 	   ######################################
 	   ###################################### */
-	/*const sam_uart_opt_t usart_console_settings = {
-		USART_SERIAL_BAUDRATE,
-		USART_SERIAL_CHAR_LENGTH,
-		USART_SERIAL_PARITY,
-		USART_SERIAL_STOP_BIT,
-		US_MR_CHMODE_NORMAL
+	const sam_uart_opt_t usart_console_settings = {
+		UART_SERIAL_BAUDRATE,
+		UART_SERIAL_CHAR_LENGTH,
+		UART_SERIAL_PARITY,
+		UART_SERIAL_STOP_BIT,
+		UART_MR_CHMODE_NORMAL
 	};
 	sysclk_enable_peripheral_clock(ID_UART1);
 	pmc_enable_periph_clk(ID_UART1);
@@ -45,9 +51,9 @@ void board_init(void)
 	uart_enable_rx(UART1);
 	uart_set_clock_divisor(UART1,(83/1)); //Pippin had GLOBAL_SLOWDOWN IT WAS VALUED 1
 	pmc_enable_periph_clk(ID_PIOA);
-	pio_set_peripheral(PIOD,PIO_TYPE_PIO_PERIPH_C,1<<3 | 1<<18);*/
+	pio_set_peripheral(PIOA,PIO_TYPE_PIO_PERIPH_C,1<<4 | 1<<5);
 	//Test UART
-	//sendDebugString("MELLATRON9000 BOOT SEQUENCE\nUART CONSOLE STARTED ON UART4\nBaudRate: 115200\nBits: 8\nNo stop bits \n");
+	sendDebugString("MELLATRON9000 BOOT SEQUENCE\nUART CONSOLE STARTED ON UART4\nBaudRate: 115200\nBits: 8\nNo stop bits \n");
 	
 	
 	/* This function is meant to contain board-specific initialization code

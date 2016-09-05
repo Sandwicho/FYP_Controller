@@ -168,8 +168,10 @@ src/ASF/sam/drivers/hsmci/hsmci.d src/ASF/sam/drivers/hsmci/hsmci.o: \
  ../src/ASF/common/services/sleepmgr/sleepmgr.h \
  ../src/ASF/common/services/sleepmgr/sam/sleepmgr.h \
  ../src/ASF/sam/drivers/twihs/twihs.h ../src/ASF/sam/drivers/uart/uart.h \
- ../src/ASF/sam/drivers/usart/usart.h ../src/ASF/sam/drivers/wdt/wdt.h \
- ../src/ASF/sam/drivers/xdmac/xdmac.h \
+ ../src/ASF/common/services/serial/serial.h \
+ ../src/ASF/common/services/serial/sam_uart/uart_serial.h \
+ ../src/ASF/sam/drivers/usart/usart.h ../src/config/conf_uart_serial.h \
+ ../src/ASF/sam/drivers/wdt/wdt.h ../src/ASF/sam/drivers/xdmac/xdmac.h \
  ../src/ASF/sam/drivers/pio/pio_handler.h \
  ../src/ASF/sam/drivers/hsmci/hsmci.h
 
@@ -525,7 +527,13 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/ASF/sam/drivers/uart/uart.h:
 
+../src/ASF/common/services/serial/serial.h:
+
+../src/ASF/common/services/serial/sam_uart/uart_serial.h:
+
 ../src/ASF/sam/drivers/usart/usart.h:
+
+../src/config/conf_uart_serial.h:
 
 ../src/ASF/sam/drivers/wdt/wdt.h:
 

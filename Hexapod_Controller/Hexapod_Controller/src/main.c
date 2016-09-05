@@ -32,6 +32,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include "../Debug.h"
 
 //define task functions
 void Task1 (void*);
@@ -47,7 +48,8 @@ int main (void){
 	xTaskCreate(Task1,"TASK1",200,NULL,1,NULL);
 	pio_set(LED0);
 	pio_set(LED1);
-
+	
+	sendDebugString("Lights on\n Hi Shovel Lord\n");
 	vTaskStartScheduler();
 	
 	
@@ -67,11 +69,13 @@ void Task1 (void* pvParameters) {
 			pio_set(LED0);
 			pio_set(LED1);
 			tg = !tg;
+			sendDebugString("On\n");
 		}
 		else {
 			pio_clear(LED0);
 			pio_clear(LED1);
 			tg = !tg;
+			sendDebugString("Fresh\n");
 		}
 		
 		
