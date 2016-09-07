@@ -80,8 +80,47 @@ void board_init(void)
 					Disable Watchdog
 	   ######################################
 	   ###################################### */
-		//sendDebugString("WATCHDOG INITIALIZATION - STARTED\n");
+		sendDebugString("WATCHDOG INITIALIZATION - STARTED\n");
 		wdt_disable(WDT);
-		//sendDebugString("WATCHDOG INITIALIZATION - FINISHED\n");
+		sendDebugString("WATCHDOG INITIALIZATION - FINISHED\n");
 		
+		
+		/* ######################################
+	   ######################################
+					Enable IRQ
+	   ######################################
+	   ###################################### */
+		sendDebugString("GLOBAL IRQ INITIALIZATION - STARTED\n");
+		cpu_irq_enable();
+		sendDebugString("GLOBAL IRQ INITIALIZATION - FINISHED\n");
+	
+	
+	/* ######################################
+	   ######################################
+                  Setup Interrupts
+	   ######################################
+	   ###################################### */
+	
+		sendDebugString("PERIPHERAL IRQ INITIALIZATION - STARTED\n");
+		//ISI
+		//isi_enable_interrupt(ISI,1<<16|1<<17);
+		//NVIC_ClearPendingIRQ(ISI_IRQn);
+		//NVIC_SetPriority(ISI_IRQn,7);
+		//NVIC_EnableIRQ(ISI_IRQn);
+		
+		//UART4
+		uart_enable_interrupt(UART1,UART_IER_RXRDY);
+		NVIC_ClearPendingIRQ(UART1_IRQn);
+		NVIC_SetPriority(UART1_IRQn,6);
+		NVIC_EnableIRQ(UART1_IRQn);
+		sendDebugString("PERIPHERAL IRQ INITIALIZATION - FINISHED\n");
+
+		NVIC_DisableIRQ(PIOA_IRQn);
+		NVIC_ClearPendingIRQ(PIOA_IRQn);
+		NVIC_SetPriority(PIOA_IRQn, 6);
+		pio_enable_interrupt(PIOA,PIO_PA11 | PIO_PA12);
+		pio_configure_interrupt(PIOA,PIO_PA11 | PIO_PA12, PIO_IT_FALL_EDGE);
+		NVIC_EnableIRQ(PIOA_IRQn);
+		
+		 
 }

@@ -36,8 +36,12 @@
 
 //define task functions
 void Task1 (void*);
+void ButtonTask (void*);
 
 //semaphores
+SemaphoreHandle_t PIOAsem = NULL;
+
+uint32_t ButtonStatus;
 
 
 
@@ -45,7 +49,8 @@ int main (void){
 	/* Insert system clock initialization code here (sysclk_init()). */
 
 	board_init();
-	xTaskCreate(Task1,"TASK1",200,NULL,1,NULL);
+	xTaskCreate(Task1,"TASK1",200,NULL,2,NULL);
+	xTaskCreate(ButtonTask,"BUTTONTASK",200,NULL,1,NULL);
 	pio_set(LED0);
 	pio_set(LED1);
 	
@@ -66,13 +71,13 @@ void Task1 (void* pvParameters) {
 	
 	for(;;){
 		if (tg){
-			pio_set(LED0);
+			//pio_set(LED0);
 			pio_set(LED1);
 			tg = !tg;
 			sendDebugString("On\n");
 		}
 		else {
-			pio_clear(LED0);
+			//pio_clear(LED0);
 			pio_clear(LED1);
 			tg = !tg;
 			sendDebugString("Fresh\n");
@@ -83,7 +88,46 @@ void Task1 (void* pvParameters) {
 	}
 
 }
+
+void ButtonTask(void* pvParameters){
+	
+	if( PIOAsem !=NULL){
+		
+		if( xSemaphoreTake()
+		
+		
+	}
+	
+	
+		
+		
+		
 	
 	
 	
 	
+	
+}
+
+
+
+
+
+	/*
+	void UART4_Handler(void) {
+		uint32_t imr = ISI->ISI_IMR;
+		char temp;
+		uart_read(UART4,&temp);
+		CLIbuf[CLIbufIndex] = temp;
+		CLIbufIndex++;
+		if(temp = "\n") xSemaphoreGiveFromISR(UARTsem,NULL);
+	}*/
+	
+void PIOA_Handler (void) {
+	uint32_t status;
+	status = pio_get_interrupt_status(PIOA);
+	status &= pio_get_interrupt_mask(PIOA);
+	pio_set(LED0);
+
+}
+

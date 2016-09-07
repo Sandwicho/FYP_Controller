@@ -52,7 +52,7 @@
  * constant can be increased, but the current value is the smallest possible one
  * that will be compatible with all existing projects.
  */
-#define MAX_INTERRUPT_SOURCES       7
+#define MAX_INTERRUPT_SOURCES       15
 
 /**
  * Describes a PIO interrupt source, including the PIO instance triggering the
@@ -203,10 +203,12 @@ uint32_t pio_handler_set_pin(uint32_t ul_pin, uint32_t ul_flag,
  * \brief Parallel IO Controller A interrupt handler.
  * Redefined PIOA interrupt handler for NVIC interrupt table.
  */
+/*
 void PIOA_Handler(void)
 {
+	
 	pio_handler_process(PIOA, ID_PIOA);
-}
+}*/
 #endif
 
 #ifdef ID_PIOB
