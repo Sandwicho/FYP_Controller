@@ -17,6 +17,7 @@
 #define UART_SERIAL_CHAR_LENGTH		US_MR_CHRL_8_BIT
 #define UART_SERIAL_PARITY			US_MR_PAR_NO
 #define	UART_SERIAL_STOP_BIT		US_MR_NBSTOP_1_BIT
+#define PIOA_BUTTONS				PIO_PA11|PIO_PA12|PIO_PA13|PIO_PA14|PIO_PA15|PIO_PA16|PIO_PA17|PIO_PA18|PIO_PA19|PIO_PA20|PIO_PA22|PIO_PA23|PIO_PA24
 
 void board_init(void)
 {
@@ -70,8 +71,8 @@ void board_init(void)
 		//pio_set_peripheral(PIOB,PIO_TYPE_PIO_OUTPUT_1,1<<12);
 		//pmc_enable_periph_clk(ID_PIOA);
 		pmc_enable_periph_clk(ID_PIOD);
-		pio_set_output(LED0,LOW,DISABLE,DISABLE);
 		pio_set_output(LED1,LOW,DISABLE,DISABLE);
+		pio_set_output(LED2,LOW,DISABLE,DISABLE);
 		//sendDebugString("LED INITIALIZATION - FINISHED\n");
 		
 		
@@ -93,6 +94,15 @@ void board_init(void)
 		sendDebugString("GLOBAL IRQ INITIALIZATION - STARTED\n");
 		cpu_irq_enable();
 		sendDebugString("GLOBAL IRQ INITIALIZATION - FINISHED\n");
+		
+		
+	/* ######################################
+	   ######################################
+                  Setup Switches
+	   ######################################
+	   ###################################### */
+		pmc_enable_periph_clk(ID_PIOA);
+		pio_set_input(PIOA,PIOA_BUTTONS,PIO_PULLUP|PIO_DEBOUNCE);
 	
 	
 	/* ######################################
@@ -118,8 +128,8 @@ void board_init(void)
 		NVIC_DisableIRQ(PIOA_IRQn);
 		NVIC_ClearPendingIRQ(PIOA_IRQn);
 		NVIC_SetPriority(PIOA_IRQn, 6);
-		pio_enable_interrupt(PIOA,PIO_PA11 | PIO_PA12);
-		pio_configure_interrupt(PIOA,PIO_PA11 | PIO_PA12, PIO_IT_FALL_EDGE);
+		pio_enable_interrupt(PIOA,PIOA_BUTTONS);
+		pio_configure_interrupt(PIOA,PIOA_BUTTONS, PIO_IT_FALL_EDGE);
 		NVIC_EnableIRQ(PIOA_IRQn);
 		
 		 

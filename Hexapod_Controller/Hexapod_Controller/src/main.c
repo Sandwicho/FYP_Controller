@@ -34,6 +34,10 @@
 #include <string.h>
 #include "../Debug.h"
 
+#define Push1 PIO_PA11
+#define Push2 PIO_PA12
+
+
 //define task functions
 void Task1 (void*);
 void ButtonTask (void*);
@@ -51,8 +55,8 @@ int main (void){
 	board_init();
 	xTaskCreate(Task1,"TASK1",200,NULL,2,NULL);
 	xTaskCreate(ButtonTask,"BUTTONTASK",200,NULL,1,NULL);
-	pio_set(LED0);
 	pio_set(LED1);
+	pio_set(LED2);
 	
 	sendDebugString("Lights on\n Hi Shovel Lord\n");
 	vTaskStartScheduler();
@@ -66,21 +70,21 @@ int main (void){
 void Task1 (void* pvParameters) {
 	int tg = 1;
 	
-	pio_clear(LED0);
 	pio_clear(LED1);
+	pio_clear(LED2);
 	
 	for(;;){
 		if (tg){
 			//pio_set(LED0);
-			pio_set(LED1);
+			//pio_set(LED1);
 			tg = !tg;
-			sendDebugString("On\n");
+			//sendDebugString("On\n");
 		}
 		else {
 			//pio_clear(LED0);
-			pio_clear(LED1);
+			//pio_clear(LED1);
 			tg = !tg;
-			sendDebugString("Fresh\n");
+			//sendDebugString("Fresh\n");
 		}
 		
 		
@@ -91,24 +95,61 @@ void Task1 (void* pvParameters) {
 
 void ButtonTask(void* pvParameters){
 	
-	if( PIOAsem !=NULL){
+	int tg1 = 1;
+	int tg2 = 1;
+	int tgd = 1;
+	
+	PIOAsem = xSemaphoreCreateBinary();
+	
+	for(;;){
 		
-		if( xSemaphoreTake()
-		
-		
+		if( PIOAsem !=NULL){
+			
+			if( xSemaphoreTake(PIOAsem,0xFFFF) == pdTRUE){
+				
+				switch(ButtonStatus){
+					
+					case(Push1) :
+						if(tg1){
+						pio_set(LED2);
+						tg1 = !tg1;
+						}
+						else {
+							pio_clear(LED2);
+							tg1 = !tg1;
+						}
+						break;
+				
+					case(Push2) :
+						if(tg2){
+						pio_set(LED1);
+						tg2 = !tg2;
+						}
+						else {
+							pio_clear(LED1);
+							tg2 = !tg2;
+						}
+						break;
+					
+					default :
+						if(tgd){
+							pio_set(LED1);
+							pio_set(LED2);
+							tgd = !tgd;
+						}
+						else {
+							pio_clear(LED1);
+							pio_clear(LED2);
+							tgd = !tgd;
+						}
+						break;
+				
+				
+				}	
+			}
+		}
 	}
-	
-	
-		
-		
-		
-	
-	
-	
-	
-	
 }
-
 
 
 
@@ -124,10 +165,9 @@ void ButtonTask(void* pvParameters){
 	}*/
 	
 void PIOA_Handler (void) {
-	uint32_t status;
-	status = pio_get_interrupt_status(PIOA);
-	status &= pio_get_interrupt_mask(PIOA);
-	pio_set(LED0);
+	
+	ButtonStatus = pio_get_interrupt_status(PIOA);
+	ButtonStatus &= pio_get_interrupt_mask(PIOA);
+	xSemaphoreGiveFromISR(PIOAsem,NULL);
 
 }
-
