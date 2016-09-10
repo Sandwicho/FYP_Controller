@@ -6,6 +6,8 @@ src\ASF\common\services\serial\usart_serial.c
 
 src\ASF\common\services\sleepmgr\sam\sleepmgr.c
 
+src\ASF\common\services\spi\sam_spi\spi_master.c
+
 src\ASF\sam\drivers\hsmci\hsmci.c
 
 src\ASF\sam\drivers\pio\pio_handler.c

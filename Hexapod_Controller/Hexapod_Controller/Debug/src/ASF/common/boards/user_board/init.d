@@ -162,7 +162,9 @@ src/ASF/common/boards/user_board/init.d \
  ../src/ASF/sam/drivers/hsmci/hsmci.h \
  ../src/ASF/common/components/memory/sd_mmc/sd_mmc_protocol.h \
  ../src/ASF/sam/drivers/pio/pio.h ../src/ASF/sam/drivers/pmc/sleep.h \
- ../src/ASF/sam/utils/fpu/fpu.h ../src/ASF/sam/drivers/spi/spi.h \
+ ../src/ASF/sam/utils/fpu/fpu.h \
+ ../src/ASF/common/services/spi/sam_spi/spi_master.h \
+ ../src/ASF/sam/drivers/spi/spi.h ../src/config/conf_spi_master.h \
  ../src/ASF/sam/drivers/supc/supc.h \
  ../src/ASF/common/services/sleepmgr/sam/sleepmgr.h \
  ../src/config/conf_sleepmgr.h \
@@ -513,7 +515,11 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/ASF/sam/utils/fpu/fpu.h:
 
+../src/ASF/common/services/spi/sam_spi/spi_master.h:
+
 ../src/ASF/sam/drivers/spi/spi.h:
+
+../src/config/conf_spi_master.h:
 
 ../src/ASF/sam/drivers/supc/supc.h:
 

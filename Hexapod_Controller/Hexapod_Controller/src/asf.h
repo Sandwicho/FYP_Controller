@@ -102,6 +102,10 @@
 // From module: SAM FPU driver
 #include <fpu.h>
 
+// From module: SPI - SAM Implementation
+#include <spi_master.h>
+#include <spi_master.h>
+
 // From module: SPI - Serial Peripheral Interface
 #include <spi.h>
 

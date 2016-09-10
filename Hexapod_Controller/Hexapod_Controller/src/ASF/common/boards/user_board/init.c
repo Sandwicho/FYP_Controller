@@ -11,6 +11,7 @@
 #include <asf.h>
 #include <board.h>
 #include <conf_board.h>
+#include "spi_master.h"
 #include "../Debug.h"
 
 #define UART_SERIAL_BAUDRATE		9600
@@ -18,6 +19,8 @@
 #define UART_SERIAL_PARITY			US_MR_PAR_NO
 #define	UART_SERIAL_STOP_BIT		US_MR_NBSTOP_1_BIT
 #define PIOA_BUTTONS				PIO_PA11|PIO_PA12|PIO_PA13|PIO_PA14|PIO_PA15|PIO_PA16|PIO_PA17|PIO_PA18|PIO_PA19|PIO_PA20|PIO_PA22|PIO_PA23|PIO_PA24
+#define PIOD_SPI					PIO_PD20|PIO_PD21|PIO_PD22
+#define PIOB_SPI					PIO_PB2
 
 void board_init(void)
 {
@@ -76,7 +79,43 @@ void board_init(void)
 		//sendDebugString("LED INITIALIZATION - FINISHED\n");
 		
 		
-		/* ######################################
+		
+	/* ######################################
+	   ######################################
+					Enable SPI
+	   ######################################
+	   ###################################### */
+		sendDebugString("SPI INITIALIZATION - STARTED\n");
+		sysclk_enable_peripheral_clock(ID_SPI0);
+		pmc_enable_periph_clk(ID_PIOD);
+		pmc_enable_periph_clk(ID_PIOB);
+		
+		struct spi_device spidevice;
+		spidevice.id = ID_SPI0;
+		
+		//Set up SPI
+		spi_master_init(SPI0);
+		spi_master_setup_device(SPI0,&spidevice,SPI_MODE_0,16000000,0);
+		spi_enable(SPI0);
+		/*spi_enable_clock(SPI0);
+		spi_reset(SPI0);
+		spi_set_master_mode(SPI0);
+		spi_disable_mode_fault_detect(SPI0);
+		spi_disable_loopback(SPI0);
+		spi_set_peripheral_chip_select_value(SPI0,spi_get_pcs(DEFAULT_CHIP_ID))*/
+		
+		
+		
+		pio_set_peripheral(PIOD,PIO_TYPE_PIO_PERIPH_B,PIOD_SPI);
+		pio_set_peripheral(PIOB,PIO_TYPE_PIO_PERIPH_D,PIOB_SPI);
+		sendDebugString("SPI INITIALIZATION - FINISHED\n");
+		sendDebugString("DWM1000 INITIALIZATION - STARTED\n");
+		sendDebugString("DWM1000 INITIALIZATION - FINISHED\n");
+		
+	
+	
+		
+	/* ######################################
 	   ######################################
 					Disable Watchdog
 	   ######################################
