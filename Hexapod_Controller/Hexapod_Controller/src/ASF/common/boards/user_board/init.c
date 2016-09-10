@@ -103,7 +103,7 @@ void board_init(void)
 	   ###################################### */
 		pmc_enable_periph_clk(ID_PIOA);
 		pio_set_input(PIOA,PIOA_BUTTONS,PIO_PULLUP|PIO_DEBOUNCE);
-		pio_set_debounce_filter(PIOA,PIOA_BUTTONS,100);
+	
 	
 	/* ######################################
 	   ######################################
