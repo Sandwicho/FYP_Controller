@@ -1,41 +1,53 @@
 /**
- * \file
- *
- * \brief Empty user application template
- *
- */
+* \file
+*
+* \brief Empty user application template
+*
+*/
 
 /**
- * \mainpage User Application template doxygen documentation
- *
- * \par Empty user application template
- *
- * Bare minimum empty user application template
- *
- * \par Content
- *
- * -# Include the ASF header files (through asf.h)
- * -# "Insert system clock initialization code here" comment
- * -# Minimal main function that starts with a call to board_init()
- * -# "Insert application code here" comment
- *
- */
+* \mainpage User Application template doxygen documentation
+*
+* \par Empty user application template
+*
+* Bare minimum empty user application template
+*
+* \par Content
+*
+* -# Include the ASF header files (through asf.h)
+* -# "Insert system clock initialization code here" comment
+* -# Minimal main function that starts with a call to board_init()
+* -# "Insert application code here" comment
+*
+*/
 
 /*
- * Include header files for all drivers that have been imported from
- * Atmel Software Framework (ASF).
- */
+* Include header files for all drivers that have been imported from
+* Atmel Software Framework (ASF).
+*/
 /*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
- */
+* Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
+*/
 #include <asf.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include "../Debug.h"
 
-#define Push1 PIO_PA11
-#define Push2 PIO_PA12
+#define Push1		PIO_PA11
+#define Push2		PIO_PA12
+#define JoySW		PIO_PA13
+#define SW4Down		PIO_PA14
+#define SW4Up		PIO_PA15
+#define SW4Left		PIO_PA16
+#define SW4Right	PIO_PA17
+#define SW4Push		PIO_PA18
+#define SW5Down		PIO_PA19
+#define SW5Up		PIO_PA20
+#define SW5Left		PIO_PA22
+#define SW5Right	PIO_PA23
+#define SW5Push		PIO_PA24
+
 
 
 //define task functions
@@ -110,42 +122,165 @@ void ButtonTask(void* pvParameters){
 				switch(ButtonStatus){
 					
 					case(Push1) :
-						if(tg1){
+					sendDebugString("Push Switch 1\n");
+					if(tg2){
 						pio_set(LED2);
-						tg1 = !tg1;
-						}
-						else {
-							pio_clear(LED2);
-							tg1 = !tg1;
-						}
-						break;
-				
-					case(Push2) :
-						if(tg2){
-						pio_set(LED1);
 						tg2 = !tg2;
-						}
-						else {
-							pio_clear(LED1);
-							tg2 = !tg2;
-						}
-						break;
+					}
+					else {
+						pio_clear(LED2);
+						tg2 = !tg2;
+					}
+					break;
+					
+					case(Push2) :
+					sendDebugString("Push Switch 2\n");
+					if(tg1){
+						pio_set(LED1);
+						tg1 = !tg1;
+					}
+					else {
+						pio_clear(LED1);
+						tg1 = !tg1;
+					}
+					break;
+					
+					case(SW4Left) :
+					sendDebugString("NAV4 Left\n");
+					if(tg1){
+						pio_set(LED1);
+						tg1 = !tg1;
+					}
+					else {
+						pio_clear(LED1);
+						tg1 = !tg1;
+					}
+					break;
+					
+					case(SW4Right) :
+					sendDebugString("NAV4 Right\n");
+					if(tg1){
+						pio_set(LED1);
+						tg1 = !tg1;
+					}
+					else {
+						pio_clear(LED1);
+						tg1 = !tg1;
+					}
+					break;
+					
+					case(SW4Up) :
+					sendDebugString("NAV4 Up\n");
+					if(tg1){
+						pio_set(LED1);
+						tg1 = !tg1;
+					}
+					else {
+						pio_clear(LED1);
+						tg1 = !tg1;
+					}
+					break;
+					
+					case(SW4Down) :
+					sendDebugString("NAV4 Down\n");
+					if(tg1){
+						pio_set(LED1);
+						tg1 = !tg1;
+					}
+					else {
+						pio_clear(LED1);
+						tg1 = !tg1;
+					}
+					break;
+					
+					case(SW4Push) :
+					sendDebugString("NAV4 Push\n");
+					if(tg1){
+						pio_set(LED1);
+						tg1 = !tg1;
+					}
+					else {
+						pio_clear(LED1);
+						tg1 = !tg1;
+					}
+					break;
+					
+					case(SW5Left) :
+					sendDebugString("NAV5 Left\n");
+					if(tg2){
+						pio_set(LED2);
+						tg2 = !tg2;
+					}
+					else {
+						pio_clear(LED2);
+						tg2 = !tg2;
+					}
+					break;
+					
+					case(SW5Right) :
+					sendDebugString("NAV5 Right\n");
+					if(tg2){
+						pio_set(LED2);
+						tg2 = !tg2;
+					}
+					else {
+						pio_clear(LED2);
+						tg2 = !tg2;
+					}
+					break;
+					
+					case(SW5Up) :
+					sendDebugString("NAV5 Up\n");
+					if(tg2){
+						pio_set(LED2);
+						tg2 = !tg2;
+					}
+					else {
+						pio_clear(LED2);
+						tg2 = !tg2;
+					}
+					break;
+					
+					case(SW5Down) :
+					sendDebugString("NAV5 Down\n");
+					if(tg2){
+						pio_set(LED2);
+						tg2 = !tg2;
+					}
+					else {
+						pio_clear(LED2);
+						tg2 = !tg2;
+					}
+					break;
+					
+					case(SW5Push) :
+					sendDebugString("NAV5 Push\n");
+					if(tg2){
+						pio_set(LED2);
+						tg2 = !tg2;
+					}
+					else {
+						pio_clear(LED2);
+						tg2 = !tg2;
+					}
+					break;
 					
 					default :
-						if(tgd){
-							pio_set(LED1);
-							pio_set(LED2);
-							tgd = !tgd;
-						}
-						else {
-							pio_clear(LED1);
-							pio_clear(LED2);
-							tgd = !tgd;
-						}
-						break;
-				
-				
-				}	
+					sendDebugString("ANALOGUE BITCH!\n");
+					if(tgd){
+						pio_set(LED1);
+						pio_set(LED2);
+						tgd = !tgd;
+					}
+					else {
+						pio_clear(LED1);
+						pio_clear(LED2);
+						tgd = !tgd;
+					}
+					break;
+					
+					
+				}
 			}
 		}
 	}
@@ -154,16 +289,16 @@ void ButtonTask(void* pvParameters){
 
 
 
-	/*
-	void UART4_Handler(void) {
-		uint32_t imr = ISI->ISI_IMR;
-		char temp;
-		uart_read(UART4,&temp);
-		CLIbuf[CLIbufIndex] = temp;
-		CLIbufIndex++;
-		if(temp = "\n") xSemaphoreGiveFromISR(UARTsem,NULL);
-	}*/
-	
+/*
+void UART4_Handler(void) {
+uint32_t imr = ISI->ISI_IMR;
+char temp;
+uart_read(UART4,&temp);
+CLIbuf[CLIbufIndex] = temp;
+CLIbufIndex++;
+if(temp = "\n") xSemaphoreGiveFromISR(UARTsem,NULL);
+}*/
+
 void PIOA_Handler (void) {
 	
 	ButtonStatus = pio_get_interrupt_status(PIOA);
