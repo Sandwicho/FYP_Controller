@@ -13,6 +13,7 @@
 #include <conf_board.h>
 #include "spi_master.h"
 #include "../Debug.h"
+#include "DW1000.h"
 
 #define UART_SERIAL_BAUDRATE		9600
 #define UART_SERIAL_CHAR_LENGTH		US_MR_CHRL_8_BIT
@@ -112,6 +113,20 @@ void board_init(void)
 		pio_set_peripheral(PIOB,PIO_TYPE_PIO_PERIPH_D,PIOB_SPI);
 		sendDebugString("SPI INITIALIZATION - FINISHED\n");
 		sendDebugString("DWM1000 INITIALIZATION - STARTED\n");
+		
+		char buf[40];
+		DW1000_toggleGPIO_MODE();
+		DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, 0x000FFFFF, PMSC_LEDC_LEN);
+
+		delay_us(1);
+		sprintf(buf,"TestDevID: 0x%x\n",DW1000_readDeviceIdentifier());
+		sendDebugString(buf);
+		sendDebugString("\n");
+		sprintf(buf,"SysStatus: 0x%x\n", DW1000_readSystemStatus());
+		sendDebugString(buf);
+		sendDebugString("\n");
+		
+		
 		sendDebugString("DWM1000 INITIALIZATION - FINISHED\n");
 		
 	

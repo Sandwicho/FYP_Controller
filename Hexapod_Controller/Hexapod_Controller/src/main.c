@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "../Debug.h"
+#include "DW1000.h"
 
 #define Push1		PIO_PA11
 #define Push2		PIO_PA12

@@ -66,5 +66,13 @@ src\ASF\sam\utils\syscalls\gcc\syscalls.c
 
 src\Debug.c
 
+src\Decawave\deca_device.c
+
+src\Decawave\deca_params_init.c
+
+src\Decawave\deca_range_tables.c
+
+src\DW1000.c
+
 src\main.c
 

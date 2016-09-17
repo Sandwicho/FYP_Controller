@@ -1,6 +1,4 @@
-src/ASF/common/boards/user_board/init.d \
- src/ASF/common/boards/user_board/init.o: \
- ../src/ASF/common/boards/user_board/init.c ../src/asf.h \
+src/DW1000.d src/DW1000.o: ../src/DW1000.c ../src/DW1000.h ../src/asf.h \
  ../src/ASF/sam/drivers/afec/afec.h ../src/ASF/sam/utils/compiler.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\lib\gcc\arm-none-eabi\5.3.1\include\stddef.h \
  ../src/ASF/common/utils/parts.h \
@@ -175,11 +173,10 @@ src/ASF/common/boards/user_board/init.d \
  ../src/ASF/common/services/serial/sam_uart/uart_serial.h \
  ../src/ASF/sam/drivers/usart/usart.h ../src/config/conf_uart_serial.h \
  ../src/ASF/sam/drivers/wdt/wdt.h ../src/ASF/sam/drivers/xdmac/xdmac.h \
- ../src/ASF/sam/drivers/pio/pio_handler.h ../src/config/../Debug.h \
- c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h \
- c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
- ../src/DW1000.h \
+ ../src/ASF/sam/drivers/pio/pio_handler.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h
+
+../src/DW1000.h:
 
 ../src/asf.h:
 
@@ -550,13 +547,5 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/ASF/sam/drivers/xdmac/xdmac.h:
 
 ../src/ASF/sam/drivers/pio/pio_handler.h:
-
-../src/config/../Debug.h:
-
-c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h:
-
-c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h:
-
-../src/DW1000.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h:
