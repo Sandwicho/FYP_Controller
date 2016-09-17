@@ -18,7 +18,9 @@
 #define UART_SERIAL_CHAR_LENGTH		US_MR_CHRL_8_BIT
 #define UART_SERIAL_PARITY			US_MR_PAR_NO
 #define	UART_SERIAL_STOP_BIT		US_MR_NBSTOP_1_BIT
-#define PIOA_BUTTONS				PIO_PA11|PIO_PA12|PIO_PA13|PIO_PA14|PIO_PA15|PIO_PA16|PIO_PA17|PIO_PA18|PIO_PA19|PIO_PA20|PIO_PA22|PIO_PA23|PIO_PA24
+#define PIOA_BUTTSANDDIR			PIO_PA11|PIO_PA12|PIO_PA13|PIO_PA18|PIO_PA24|PIO_PA14|PIO_PA15|PIO_PA16|PIO_PA17|PIO_PA19|PIO_PA20|PIO_PA22|PIO_PA23
+#define PIOA_BUTTONS				PIO_PA11|PIO_PA12|PIO_PA13|PIO_PA18|PIO_PA24
+#define PIOA_DIRECTIONS				PIO_PA14|PIO_PA15|PIO_PA16|PIO_PA17|PIO_PA19|PIO_PA20|PIO_PA22|PIO_PA23
 #define PIOD_SPI					PIO_PD20|PIO_PD21|PIO_PD22
 #define PIOB_SPI					PIO_PB2
 
@@ -141,8 +143,8 @@ void board_init(void)
 	   ######################################
 	   ###################################### */
 		pmc_enable_periph_clk(ID_PIOA);
-		pio_set_input(PIOA,PIOA_BUTTONS,PIO_PULLUP|PIO_DEBOUNCE);
-		pio_set_debounce_filter(PIOA,PIOA_BUTTONS,100);
+		pio_set_input(PIOA,PIOA_BUTTSANDDIR,PIO_PULLUP|PIO_DEBOUNCE);
+		pio_set_debounce_filter(PIOA,PIOA_BUTTSANDDIR,100);
 	
 	/* ######################################
 	   ######################################
@@ -167,8 +169,9 @@ void board_init(void)
 		NVIC_DisableIRQ(PIOA_IRQn);
 		NVIC_ClearPendingIRQ(PIOA_IRQn);
 		NVIC_SetPriority(PIOA_IRQn, 6);
-		pio_enable_interrupt(PIOA,PIOA_BUTTONS);
+		pio_enable_interrupt(PIOA,PIOA_BUTTSANDDIR);
 		pio_configure_interrupt(PIOA,PIOA_BUTTONS, PIO_IT_FALL_EDGE);
+		pio_configure_interrupt(PIOA,PIOA_DIRECTIONS, PIO_IT_EDGE);
 		NVIC_EnableIRQ(PIOA_IRQn);
 		
 		 

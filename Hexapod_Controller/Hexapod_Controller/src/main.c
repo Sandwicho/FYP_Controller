@@ -57,7 +57,9 @@ void ButtonTask (void*);
 //semaphores
 SemaphoreHandle_t PIOAsem = NULL;
 
+
 uint32_t ButtonStatus;
+int LEDtg;
 
 
 
@@ -83,18 +85,24 @@ void Task1 (void* pvParameters) {
 	int tg = 1;
 	
 	pio_clear(LED1);
-	pio_clear(LED2);
+	
+	
+	
 	
 	for(;;){
+		
+		if(LEDtg)
+		
+		
 		if (tg){
-			//pio_set(LED0);
-			//pio_set(LED1);
+			
+			pio_set(LED1);
 			tg = !tg;
 			//sendDebugString("On\n");
 		}
 		else {
-			//pio_clear(LED0);
-			//pio_clear(LED1);
+			
+			pio_clear(LED1);
 			tg = !tg;
 			//sendDebugString("Fresh\n");
 		}
@@ -111,6 +119,23 @@ void ButtonTask(void* pvParameters){
 	int tg2 = 1;
 	int tgd = 1;
 	
+	int SW4Uptg = 0;
+	int SW4Downtg = 0;
+	int SW4Lefttg = 0;
+	int SW4Righttg = 0;
+	int SW5Uptg = 0;
+	int SW5Downtg = 0;
+	int SW5Lefttg = 0;
+	int SW5Righttg = 0;
+	
+	
+	Byte sendArr[18];
+	float moveTurn = 0;
+	float movDir = 0;
+	int cycle = 60;
+	int max_i = 0;
+	Byte walkEN = 0;
+	
 	PIOAsem = xSemaphoreCreateBinary();
 	
 	for(;;){
@@ -123,6 +148,9 @@ void ButtonTask(void* pvParameters){
 					
 					case(Push1) :
 					sendDebugString("Push Switch 1\n");
+					
+					
+					
 					if(tg2){
 						pio_set(LED2);
 						tg2 = !tg2;
@@ -171,18 +199,27 @@ void ButtonTask(void* pvParameters){
 					
 					case(SW4Up) :
 					sendDebugString("NAV4 Up\n");
-					if(tg1){
+					
+					
+					SW4Uptg = !SW4Uptg;
+					
+					if (SW4Uptg){
 						pio_set(LED1);
-						tg1 = !tg1;
+						LEDtg = 1;
+						
 					}
-					else {
+					else{
 						pio_clear(LED1);
-						tg1 = !tg1;
+						LEDtg = 0;
 					}
+					
 					break;
 					
 					case(SW4Down) :
 					sendDebugString("NAV4 Down\n");
+					
+					
+					
 					if(tg1){
 						pio_set(LED1);
 						tg1 = !tg1;
