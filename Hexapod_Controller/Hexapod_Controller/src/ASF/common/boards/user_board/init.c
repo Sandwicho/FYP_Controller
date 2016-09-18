@@ -11,7 +11,7 @@
 #include <asf.h>
 #include <board.h>
 #include <conf_board.h>
-#include "spi_master.h"
+//#include "spi_master.h"
 #include "../Debug.h"
 #include "DW1000.h"
 
@@ -24,6 +24,7 @@
 #define PIOA_DIRECTIONS				PIO_PA14|PIO_PA15|PIO_PA16|PIO_PA17|PIO_PA19|PIO_PA20|PIO_PA22|PIO_PA23
 #define PIOD_SPI					PIO_PD20|PIO_PD21|PIO_PD22
 #define PIOB_SPI					PIO_PB2
+#define PIOB_DWM_RESET				PIO_PB0
 
 void board_init(void)
 {
@@ -94,12 +95,14 @@ void board_init(void)
 		pmc_enable_periph_clk(ID_PIOB);
 		
 		struct spi_device spidevice;
-		spidevice.id = ID_SPI0;
+		spidevice.id = 0;
+		
 		
 		//Set up SPI
 		spi_master_init(SPI0);
 		spi_master_setup_device(SPI0,&spidevice,SPI_MODE_0,16000000,0);
 		spi_enable(SPI0);
+		spi_select_device(SPI0,&spidevice);
 		/*spi_enable_clock(SPI0);
 		spi_reset(SPI0);
 		spi_set_master_mode(SPI0);
@@ -113,18 +116,12 @@ void board_init(void)
 		pio_set_peripheral(PIOB,PIO_TYPE_PIO_PERIPH_D,PIOB_SPI);
 		sendDebugString("SPI INITIALIZATION - FINISHED\n");
 		sendDebugString("DWM1000 INITIALIZATION - STARTED\n");
+		pio_set_output(PIOB,PIOB_DWM_RESET,LOW,DISABLE,DISABLE);
+		pio_set(PIOB,PIOB_DWM_RESET);
+		pio_clear(PIOB,PIOB_DWM_RESET);
+		//DW1000_initialise();
 		
-		char buf[40];
-		DW1000_toggleGPIO_MODE();
-		DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, 0x000FFFFF, PMSC_LEDC_LEN);
-
-		delay_us(1);
-		sprintf(buf,"TestDevID: 0x%x\n",DW1000_readDeviceIdentifier());
-		sendDebugString(buf);
-		sendDebugString("\n");
-		sprintf(buf,"SysStatus: 0x%x\n", DW1000_readSystemStatus());
-		sendDebugString(buf);
-		sendDebugString("\n");
+		
 		
 		
 		sendDebugString("DWM1000 INITIALIZATION - FINISHED\n");

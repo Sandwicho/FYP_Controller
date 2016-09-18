@@ -295,8 +295,8 @@ uint64_t DW1000_readReg(uint8_t cmd, int subindex, uint16_t offset, int n) {
     		headerLen = 3;
     	}
     }
-	for(int i = 0;i<headerLen;i++) spi_write(SPI0,header+i,NULL,NULL);
-	spi_read(SPI0,data,NULL);
+	spi_write_packet(SPI0,header,headerLen);
+	spi_read_packet(SPI0,data,n);
 	
 	///* SPI transaction */
 	//digitalWrite(_ss, LOW);
@@ -374,13 +374,14 @@ void DW1000_writeReg(uint8_t cmd, int subindex, uint16_t offset, uint64_t buffer
     	}
     }
 	//while(!(SPI0->SPI_SR & SPI_SR_TXEMPTY));
-	spi_write_packet(SPI0,header+1,headerLen);
+	
+	spi_write_packet(SPI0,header,headerLen);
 	
 	//for(int i = 0;i<headerLen;i++){
 	//	 spi_write(SPI0,header+i,NULL,NULL);
 	//}
 	
-	spi_write_packet(SPI0,data+i,n);
+	spi_write_packet(SPI0,data,n);
 	/*
 	for(int i = 0;i<n;i++)
 	{

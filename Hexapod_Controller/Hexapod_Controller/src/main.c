@@ -61,6 +61,9 @@ SemaphoreHandle_t PIOAsem = NULL;
 
 uint32_t ButtonStatus;
 int LEDtg;
+int holdFrame;
+
+
 
 
 
@@ -139,6 +142,12 @@ void ButtonTask(void* pvParameters){
 	
 	PIOAsem = xSemaphoreCreateBinary();
 	
+	//shit for stuff
+	char buffloat[40];
+	char buffcast[40];
+	float testfloat;
+	
+	
 	for(;;){
 		
 		if( PIOAsem !=NULL){
@@ -149,6 +158,24 @@ void ButtonTask(void* pvParameters){
 					
 					case(Push1) :
 					sendDebugString("Push Switch 1\n");
+					
+					
+					
+					
+					
+					DW1000_toggleGPIO_MODE();
+					DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, 0x000F01FF, PMSC_LEDC_LEN);
+					/*
+					testfloat = 5.5;
+					char *c = (char *) &testfloat;
+					sprintf(buffloat,"float: %x\n",testfloat);
+					
+					sendDebugString(buffloat);
+					sprintf(buffcast,"cast: %x\n",c);
+					sendDebugString(buffcast);
+					sprintf(buffcast,"cast2: %x\n",*c);
+					sendDebugString(buffcast);
+					*/
 					
 					
 					
@@ -164,6 +191,21 @@ void ButtonTask(void* pvParameters){
 					
 					case(Push2) :
 					sendDebugString("Push Switch 2\n");
+					
+					char buf[40];
+					
+
+					delay_us(1);
+					sprintf(buf,"TestDevID: 0x%x\n",DW1000_readDeviceIdentifier());
+					sendDebugString(buf);
+					sendDebugString("\n");
+					sprintf(buf,"SysStatus: 0x%x\n", DW1000_readSystemStatus());
+					sendDebugString(buf);
+					sendDebugString("\n");
+					DW1000_writeReg(PANADR_ID,DW1000_NO_SUB,DW1000_NO_OFFSET,0xDECA2230,PANADR_LEN);
+					sprintf(buf,"ID WRITTEN\nREAD BACK: 0x%x\n",DW1000_readReg(PANADR_ID,DW1000_NO_SUB,DW1000_NO_OFFSET,PANADR_LEN));
+					sendDebugString(buf);
+					
 					if(tg1){
 						pio_set(LED1);
 						tg1 = !tg1;
@@ -176,27 +218,57 @@ void ButtonTask(void* pvParameters){
 					
 					case(SW4Left) :
 					sendDebugString("NAV4 Left\n");
-					if(tg1){
+					
+					SW4Lefttg = !SW4Lefttg;
+					
+					if (SW4Lefttg){
+						moveTurn = 0;
+						movDir = 4.71;
+						cycle = 60;
+						max_i = 30;
+						walkEN = 1;
+						holdFrame = 1;
+						
 						pio_set(LED1);
-						tg1 = !tg1;
+						LEDtg = 1;
+						
 					}
-					else {
+					else{
+						
+						walkEN = 0;
+						holdFrame = 0;
 						pio_clear(LED1);
-						tg1 = !tg1;
+						LEDtg = 0;
 					}
 					break;
 					
 					case(SW4Right) :
 					sendDebugString("NAV4 Right\n");
-					if(tg1){
+					
+					SW4Righttg = !SW4Righttg;
+					
+					if (SW4Righttg){
+						moveTurn = 0;
+						movDir = 1.57;
+						cycle = 60;
+						max_i = 30;
+						walkEN = 1;
+						holdFrame = 1;
+						
 						pio_set(LED1);
-						tg1 = !tg1;
+						LEDtg = 1;
+						
 					}
-					else {
+					else{
+						
+						walkEN = 0;
+						holdFrame = 0;
 						pio_clear(LED1);
-						tg1 = !tg1;
+						LEDtg = 0;
 					}
 					break;
+					
+					
 					
 					case(SW4Up) :
 					sendDebugString("NAV4 Up\n");
@@ -205,30 +277,57 @@ void ButtonTask(void* pvParameters){
 					SW4Uptg = !SW4Uptg;
 					
 					if (SW4Uptg){
+						moveTurn = 0;
+						movDir = 0;
+						cycle = 60;
+						max_i = 30;
+						walkEN = 1;
+						holdFrame = 1;
+						
 						pio_set(LED1);
 						LEDtg = 1;
 						
 					}
 					else{
+						
+						walkEN = 0;
+						holdFrame = 0;
 						pio_clear(LED1);
 						LEDtg = 0;
 					}
 					
 					break;
 					
+					
+					
 					case(SW4Down) :
 					sendDebugString("NAV4 Down\n");
 					
 					
+					SW4Downtg = !SW4Downtg;
 					
-					if(tg1){
+					
+					if (SW4Downtg){
+						moveTurn = 0;
+						movDir = 3.14;
+						cycle = 60;
+						max_i = 30;
+						walkEN = 1;
+						holdFrame = 1;
+						
 						pio_set(LED1);
-						tg1 = !tg1;
+						LEDtg = 1;
+						
 					}
-					else {
+					else{
+						
+						walkEN = 0;
+						holdFrame = 0;
 						pio_clear(LED1);
-						tg1 = !tg1;
+						LEDtg = 0;
 					}
+					
+					
 					break;
 					
 					case(SW4Push) :
@@ -245,30 +344,61 @@ void ButtonTask(void* pvParameters){
 					
 					case(SW5Left) :
 					sendDebugString("NAV5 Left\n");
-					if(tg2){
-						pio_set(LED2);
-						tg2 = !tg2;
+					
+					SW5Lefttg = !SW5Lefttg;
+					
+					if (SW5Lefttg){
+						moveTurn = -1;
+						movDir = 0;
+						cycle = 60;
+						max_i = 30;
+						walkEN = 1;
+						holdFrame = 1;
+						
+						pio_set(LED1);
+						LEDtg = 1;
+						
 					}
-					else {
-						pio_clear(LED2);
-						tg2 = !tg2;
+					else{
+						
+						walkEN = 0;
+						holdFrame = 0;
+						pio_clear(LED1);
+						LEDtg = 0;
 					}
 					break;
 					
 					case(SW5Right) :
 					sendDebugString("NAV5 Right\n");
-					if(tg2){
-						pio_set(LED2);
-						tg2 = !tg2;
+					
+					SW5Righttg = !SW5Righttg;
+					
+					if (SW4Righttg){
+						moveTurn = 1;
+						movDir = 0;
+						cycle = 60;
+						max_i = 30;
+						walkEN = 1;
+						holdFrame = 1;
+						
+						pio_set(LED1);
+						LEDtg = 1;
+						
 					}
-					else {
-						pio_clear(LED2);
-						tg2 = !tg2;
+					else{
+						
+						walkEN = 0;
+						holdFrame = 0;
+						pio_clear(LED1);
+						LEDtg = 0;
 					}
 					break;
 					
 					case(SW5Up) :
 					sendDebugString("NAV5 Up\n");
+					
+					SW5Uptg = !SW5Uptg;
+					
 					if(tg2){
 						pio_set(LED2);
 						tg2 = !tg2;
@@ -281,6 +411,9 @@ void ButtonTask(void* pvParameters){
 					
 					case(SW5Down) :
 					sendDebugString("NAV5 Down\n");
+					
+					SW5Downtg = !SW5Downtg;
+					
 					if(tg2){
 						pio_set(LED2);
 						tg2 = !tg2;

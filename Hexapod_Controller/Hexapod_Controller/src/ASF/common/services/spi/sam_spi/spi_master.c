@@ -225,6 +225,7 @@ status_code_t spi_read_packet(Spi *p_spi, uint8_t *data, size_t len)
 	uint32_t i = 0;
 
 	while (len) {
+		
 		timeout = SPI_TIMEOUT;
 		while (!spi_is_tx_ready(p_spi)) {
 			if (!timeout--) {
@@ -232,7 +233,7 @@ status_code_t spi_read_packet(Spi *p_spi, uint8_t *data, size_t len)
 			}
 		}
 		spi_write_single(p_spi, CONFIG_SPI_MASTER_DUMMY);
-
+		
 		timeout = SPI_TIMEOUT;
 		while (!spi_is_rx_ready(p_spi)) {
 			if (!timeout--) {
