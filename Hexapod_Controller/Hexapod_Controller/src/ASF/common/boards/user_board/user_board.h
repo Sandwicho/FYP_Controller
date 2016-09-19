@@ -37,8 +37,11 @@
 #define BOARD_XOSC_STARTUP_US  500000
 
 //define LED pins 
-#define LED1 PIOD,PIO_PD31
-#define LED2 PIOD,PIO_PD26
+#define LED1			PIOD,PIO_PD31
+#define LED2			PIOD,PIO_PD26
+#define PIOB_DWM_RESET	PIOB,PIO_PB0
+
+
 
 
 

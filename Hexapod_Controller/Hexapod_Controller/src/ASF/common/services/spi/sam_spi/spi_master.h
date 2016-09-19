@@ -76,12 +76,12 @@ extern "C" {
 
 //! Default Configuration of SPI Master Delay BCT
 #ifndef CONFIG_SPI_MASTER_DELAY_BCT
-#define CONFIG_SPI_MASTER_DELAY_BCT          0
+#define CONFIG_SPI_MASTER_DELAY_BCT          6
 #endif
 
 //! Default Configuration of SPI Master Delay BS
 #ifndef CONFIG_SPI_MASTER_DELAY_BS
-#define CONFIG_SPI_MASTER_DELAY_BS           0
+#define CONFIG_SPI_MASTER_DELAY_BS           4
 #endif
 
 //! Default Configuration of SPI Master Dummy Field
@@ -130,6 +130,8 @@ typedef uint32_t board_spi_select_id_t;
 struct spi_device {
 	//! Board specific select id
 	board_spi_select_id_t id;
+	
+	
 };
 
 /** \brief Initialize the SPI in master mode.

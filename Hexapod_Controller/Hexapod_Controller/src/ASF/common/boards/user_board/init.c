@@ -24,7 +24,7 @@
 #define PIOA_DIRECTIONS				PIO_PA14|PIO_PA15|PIO_PA16|PIO_PA17|PIO_PA19|PIO_PA20|PIO_PA22|PIO_PA23
 #define PIOD_SPI					PIO_PD20|PIO_PD21|PIO_PD22
 #define PIOB_SPI					PIO_PB2
-#define PIOB_DWM_RESET				PIO_PB0
+
 
 void board_init(void)
 {
@@ -100,7 +100,7 @@ void board_init(void)
 		
 		//Set up SPI
 		spi_master_init(SPI0);
-		spi_master_setup_device(SPI0,&spidevice,SPI_MODE_0,16000000,0);
+		spi_master_setup_device(SPI0,&spidevice,SPI_MODE_0,3000000,0); //was 16000000
 		spi_enable(SPI0);
 		spi_select_device(SPI0,&spidevice);
 		/*spi_enable_clock(SPI0);
@@ -116,9 +116,9 @@ void board_init(void)
 		pio_set_peripheral(PIOB,PIO_TYPE_PIO_PERIPH_D,PIOB_SPI);
 		sendDebugString("SPI INITIALIZATION - FINISHED\n");
 		sendDebugString("DWM1000 INITIALIZATION - STARTED\n");
-		pio_set_output(PIOB,PIOB_DWM_RESET,LOW,DISABLE,DISABLE);
-		pio_set(PIOB,PIOB_DWM_RESET);
-		pio_clear(PIOB,PIOB_DWM_RESET);
+		pio_set_output(PIOB_DWM_RESET,LOW,DISABLE,DISABLE);
+		pio_set(PIOB_DWM_RESET);
+		pio_clear(PIOB_DWM_RESET);
 		//DW1000_initialise();
 		
 		

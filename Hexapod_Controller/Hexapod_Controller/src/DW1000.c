@@ -272,6 +272,14 @@ uint64_t DW1000_readReg(uint8_t cmd, int subindex, uint16_t offset, int n) {
 	uint64_t result = 0;
 	int i;
 
+
+	struct spi_device2{
+		uint32_t id;
+	}spidevice1;
+
+	spidevice1.id = 0;
+
+
 	/* Filter results more than 4 octets */
 	if (n > 8) {
 		return 0;									// TODO: return error
@@ -295,8 +303,14 @@ uint64_t DW1000_readReg(uint8_t cmd, int subindex, uint16_t offset, int n) {
     		headerLen = 3;
     	}
     }
+	
+	spi_select_device(SPI0,&spidevice1);
 	spi_write_packet(SPI0,header,headerLen);
+	
 	spi_read_packet(SPI0,data,n);
+	spi_deselect_device(SPI0,&spidevice1);
+	
+	
 	
 	///* SPI transaction */
 	//digitalWrite(_ss, LOW);
@@ -347,6 +361,12 @@ void DW1000_writeReg(uint8_t cmd, int subindex, uint16_t offset, uint64_t buffer
 	int headerLen = 1;								// SPI transaction header length
 	int i;											// Counter
 
+	struct spi_device2{
+		uint32_t id;
+	}spidevice1;
+	
+	spidevice1.id = 0;
+
 	/* Split data buffer */
 	uint8_t data[n];									// Array
     uint64_t mask = 0xFF;							// Mask for bitwise operation (eg: first iter.- 0000 0000 0000 00FF)
@@ -374,6 +394,7 @@ void DW1000_writeReg(uint8_t cmd, int subindex, uint16_t offset, uint64_t buffer
     	}
     }
 	//while(!(SPI0->SPI_SR & SPI_SR_TXEMPTY));
+	spi_select_device(SPI0,&spidevice1);
 	
 	spi_write_packet(SPI0,header,headerLen);
 	
@@ -382,6 +403,8 @@ void DW1000_writeReg(uint8_t cmd, int subindex, uint16_t offset, uint64_t buffer
 	//}
 	
 	spi_write_packet(SPI0,data,n);
+	
+	spi_deselect_device(SPI0,&spidevice1);
 	/*
 	for(int i = 0;i<n;i++)
 	{

@@ -63,6 +63,13 @@ uint32_t ButtonStatus;
 int LEDtg;
 int holdFrame;
 
+/*
+struct spi_device2{
+	uint32_t id;
+	}spidevice1;
+	*/
+
+
 
 
 
@@ -146,7 +153,9 @@ void ButtonTask(void* pvParameters){
 	char buffloat[40];
 	char buffcast[40];
 	float testfloat;
+	int i = 0;
 	
+	//spidevice1.id = 0;
 	
 	for(;;){
 		
@@ -169,7 +178,7 @@ void ButtonTask(void* pvParameters){
 					testfloat = 5.5;
 					char *c = (char *) &testfloat;
 					sprintf(buffloat,"float: %x\n",testfloat);
-					
+					try this nigger *((uint32_t*)&variable)
 					sendDebugString(buffloat);
 					sprintf(buffcast,"cast: %x\n",c);
 					sendDebugString(buffcast);
@@ -194,17 +203,26 @@ void ButtonTask(void* pvParameters){
 					
 					char buf[40];
 					
+					//spi_select_device(SPI0,&spidevice1);
 
 					delay_us(1);
 					sprintf(buf,"TestDevID: 0x%x\n",DW1000_readDeviceIdentifier());
 					sendDebugString(buf);
 					sendDebugString("\n");
+					
+					
+					//spi_deselect_device(SPI0,&spidevice1);
+					
 					sprintf(buf,"SysStatus: 0x%x\n", DW1000_readSystemStatus());
 					sendDebugString(buf);
 					sendDebugString("\n");
 					DW1000_writeReg(PANADR_ID,DW1000_NO_SUB,DW1000_NO_OFFSET,0xDECA2230,PANADR_LEN);
 					sprintf(buf,"ID WRITTEN\nREAD BACK: 0x%x\n",DW1000_readReg(PANADR_ID,DW1000_NO_SUB,DW1000_NO_OFFSET,PANADR_LEN));
 					sendDebugString(buf);
+					
+					//pio_set(PIOB_DWM_RESET);
+					//pio_clear(PIOB_DWM_RESET);
+					
 					
 					if(tg1){
 						pio_set(LED1);
