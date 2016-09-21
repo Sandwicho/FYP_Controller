@@ -100,7 +100,7 @@ void board_init(void)
 		
 		//Set up SPI
 		spi_master_init(SPI0);
-		spi_master_setup_device(SPI0,&spidevice,SPI_MODE_0,3000000,0); //was 16000000
+		spi_master_setup_device(SPI0,&spidevice,SPI_MODE_0,16000000,0); //was 16000000
 		spi_enable(SPI0);
 		spi_select_device(SPI0,&spidevice);
 		/*spi_enable_clock(SPI0);
@@ -119,8 +119,10 @@ void board_init(void)
 		pio_set_output(PIOB_DWM_RESET,LOW,DISABLE,DISABLE);
 		pio_set(PIOB_DWM_RESET);
 		pio_clear(PIOB_DWM_RESET);
-		//DW1000_initialise();
 		
+		delay_ms(10);
+		//DW1000_initialise();
+		DW1000_toggleGPIO_MODE();
 		
 		
 		

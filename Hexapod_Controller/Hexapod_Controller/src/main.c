@@ -78,6 +78,7 @@ int main (void){
 	/* Insert system clock initialization code here (sysclk_init()). */
 
 	board_init();
+	//DW1000_toggleGPIO_MODE();
 	xTaskCreate(Task1,"TASK1",200,NULL,2,NULL);
 	xTaskCreate(ButtonTask,"BUTTONTASK",200,NULL,1,NULL);
 	pio_set(LED1);
@@ -150,10 +151,10 @@ void ButtonTask(void* pvParameters){
 	PIOAsem = xSemaphoreCreateBinary();
 	
 	//shit for stuff
-	char buffloat[40];
-	char buffcast[40];
+	char buf[40];
+	char send[40];
 	float testfloat;
-	int i = 0;
+	int i,led = 0;
 	
 	//spidevice1.id = 0;
 	
@@ -169,11 +170,82 @@ void ButtonTask(void* pvParameters){
 					sendDebugString("Push Switch 1\n");
 					
 					
-					
-					
-					
 					DW1000_toggleGPIO_MODE();
-					DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, 0x000F01FF, PMSC_LEDC_LEN);
+					
+					
+					/*
+					uint32_t led = 0;
+					char send[40];
+					//sprintf(send,"led1: %x\n",led);
+					//sendDebugString(send);
+					led = DW1000_readReg(GPIO_CTRL_ID, DW1000_SUB, GPIO_MODE_OFFSET, GPIO_MODE_LEN);
+					//sprintf(send,"led1.5: %x\n",led);
+					//sendDebugString(send);
+					
+					DW1000_writeReg(GPIO_CTRL_ID, DW1000_SUB, GPIO_MODE_OFFSET,0x5540, GPIO_MODE_LEN);
+					//led = DW1000_readReg(GPIO_CTRL_ID, DW1000_SUB, GPIO_MODE_OFFSET, GPIO_MODE_LEN);
+					//sprintf(send,"led1.75: %x\n",led);
+					//sendDebugString(send);
+					
+					led = DW1000_readReg(PMSC_ID, DW1000_SUB, PMSC_CTRL0_OFFSET, PMSC_CTRL0_LEN);
+					//sprintf(send,"led2: %x\n",led);
+					//sendDebugString(send);
+					
+					led |= (1<<18) | (1<<23);
+					//sprintf(send,"led3: %x\n",led);
+					//sendDebugString(send);
+					
+					DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_CTRL0_OFFSET, led, PMSC_CTRL0_LEN);
+					
+					//led = DW1000_readReg(PMSC_ID, DW1000_SUB, PMSC_CTRL0_OFFSET, PMSC_CTRL0_LEN);
+					//sprintf(send,"led4: %x\n",led);
+					//sendDebugString(send);
+					
+					led = DW1000_readReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, PMSC_LEDC_LEN);
+					
+					sprintf(send,"ledc: %x\n",led);
+					sendDebugString(send);
+					
+					led = PMSC_LEDC_BLNKEN | (1<<5);
+					sprintf(send,"led4: %x\n",led);
+					sendDebugString(send);
+					
+					led|= 0xF0000;
+					sprintf(send,"led5: %x\n",led);
+					sendDebugString(send);
+					
+					DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, led, PMSC_LEDC_LEN);
+					//led = DW1000_readReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, PMSC_LEDC_LEN);
+					sprintf(send,"led6: %x\n",led);
+					sendDebugString(send);
+					
+					led &= ~0xF0000;
+					sprintf(send,"led7: %x\n",led);
+					sendDebugString(send);
+					
+					
+					
+					DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, led, PMSC_LEDC_LEN);
+					
+					led = DW1000_readReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, PMSC_LEDC_LEN);
+					
+					sprintf(send,"ledc: %x\n",led);
+					sendDebugString(send);
+					
+					
+					
+					/*
+					DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, 0x00010000, PMSC_LEDC_LEN);
+					delay_us(1000);
+					DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, 0x00020000, PMSC_LEDC_LEN);
+					delay_us(1000);
+					DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, 0x00040000, PMSC_LEDC_LEN);
+					delay_us(1000);
+					DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, 0x00080000, PMSC_LEDC_LEN);
+					delay_us(1000);
+					DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, 0x00030000, PMSC_LEDC_LEN);
+					sendDebugString("Did we make it?\n");*/
+					
 					/*
 					testfloat = 5.5;
 					char *c = (char *) &testfloat;

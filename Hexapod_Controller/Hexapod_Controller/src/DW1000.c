@@ -228,9 +228,37 @@ void DW1000_setSystemConfig(uint64_t buffer) {
 	 DW1000_writeReg(SYS_CFG_ID, DW1000_NO_SUB, DW1000_NO_OFFSET, buffer, SYS_CFG_LEN);
 }
 
+
+//if running this right after doing a reset of the DW1000 put in a dealy
 void DW1000_toggleGPIO_MODE() {
-	 DW1000_writeReg(GPIO_CTRL_ID, DW1000_SUB, GPIO_MODE_OFFSET,0x001540, GPIO_MODE_LEN);
-	 DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, 0x00000120, PMSC_LEDC_LEN);
+	uint32_t led = 0;
+	//read the gio_mode register so we collect any of the reserved bits, not necessary for this one its all 0's  
+	led = DW1000_readReg(GPIO_CTRL_ID, DW1000_SUB, GPIO_MODE_OFFSET, GPIO_MODE_LEN);
+	//write to set up all the gpios as leds plus an extra 4 in the first 5, all the cool kids are doing it
+	DW1000_writeReg(GPIO_CTRL_ID, DW1000_SUB, GPIO_MODE_OFFSET,0x5540, GPIO_MODE_LEN);
+	
+	//read the ctrl0 register to get all those reserved bits
+	led = DW1000_readReg(PMSC_ID, DW1000_SUB, PMSC_CTRL0_OFFSET, PMSC_CTRL0_LEN);
+	led |= (1<<18) | (1<<23); //activate those 2 weird clocks bro
+	//and slam them in there
+	DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_CTRL0_OFFSET, led, PMSC_CTRL0_LEN);
+	
+	//apparently reading this is garbage and just gives whats in ctrl0 the first time so fuck that noise
+	//led = DW1000_readReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, PMSC_LEDC_LEN);
+	
+	//enable blinking and set the default blink time
+	led = PMSC_LEDC_BLNKEN | (1<<5);
+	
+	//this makes all the lights blink now
+	led|= 0xf0000;
+	//slam it in
+	DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, led, PMSC_LEDC_LEN);
+	
+	led &= ~0xf0000; //write the same thing without the blink now
+	//and it should be ready to do stuff normally
+	DW1000_writeReg(PMSC_ID, DW1000_SUB, PMSC_LEDC_OFFSET, led, PMSC_LEDC_LEN);
+	
+	
 }
  
 void DW1000_setTxFrameControl(long buffer) {
@@ -306,7 +334,8 @@ uint64_t DW1000_readReg(uint8_t cmd, int subindex, uint16_t offset, int n) {
 	
 	spi_select_device(SPI0,&spidevice1);
 	spi_write_packet(SPI0,header,headerLen);
-	
+
+
 	spi_read_packet(SPI0,data,n);
 	spi_deselect_device(SPI0,&spidevice1);
 	
