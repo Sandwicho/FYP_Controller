@@ -55,6 +55,9 @@
 void Task1 (void*);
 void ButtonTask (void*);
 
+//function prototypes, move them to a .h one day, one day
+void buildFrame(float Turn,float Dir,int cycle,int max_i,Byte walkEN);
+
 //semaphores
 SemaphoreHandle_t PIOAsem = NULL;
 
@@ -62,6 +65,8 @@ SemaphoreHandle_t PIOAsem = NULL;
 uint32_t ButtonStatus;
 int LEDtg;
 int holdFrame;
+
+Byte sendArr[18];
 
 /*
 struct spi_device2{
@@ -139,9 +144,10 @@ void ButtonTask(void* pvParameters){
 	int SW5Downtg = 0;
 	int SW5Lefttg = 0;
 	int SW5Righttg = 0;
+	int floatchange = 0;
 	
 	
-	Byte sendArr[18];
+	
 	float moveTurn = 0;
 	float movDir = 0;
 	int cycle = 60;
@@ -170,7 +176,10 @@ void ButtonTask(void* pvParameters){
 					sendDebugString("Push Switch 1\n");
 					
 					
-					DW1000_toggleGPIO_MODE();
+					
+					
+					
+					//DW1000_toggleGPIO_MODE();
 					
 					
 					/*
@@ -322,6 +331,15 @@ void ButtonTask(void* pvParameters){
 						pio_set(LED1);
 						LEDtg = 1;
 						
+						floatchange = *((uint32_t*)&movDir);
+						
+						sprintf(buf,"floatchange hex: %x\n",floatchange);
+						sendDebugString(buf);
+						sprintf(buf,"floatchange float: %f\n",floatchange);
+						sendDebugString(buf);
+						sprintf(buf,"float orig: %x\n",movDir);
+						sendDebugString(buf);
+						
 					}
 					else{
 						
@@ -463,7 +481,7 @@ void ButtonTask(void* pvParameters){
 					
 					SW5Righttg = !SW5Righttg;
 					
-					if (SW4Righttg){
+					if (SW5Righttg){
 						moveTurn = 1;
 						movDir = 0;
 						cycle = 60;
@@ -542,6 +560,10 @@ void ButtonTask(void* pvParameters){
 					
 					
 				}
+				buildFrame(moveTurn,movDir,cycle,max_i,walkEN);
+				
+				
+				
 			}
 		}
 	}
@@ -566,4 +588,54 @@ void PIOA_Handler (void) {
 	ButtonStatus &= pio_get_interrupt_mask(PIOA);
 	xSemaphoreGiveFromISR(PIOAsem,NULL);
 
+}
+
+void buildFrame(float Turn,float Dir,int cycle,int max_i,Byte walkEN) {
+	int floatchangeTurn = 0;
+	int floatchangeDir = 0;
+	
+	//************************
+	//kill this later yo
+	char buf[40];
+	//************************
+	
+	sendArr[0] = 3;
+	
+	floatchangeTurn = *((uint32_t*)&Turn);
+	floatchangeDir = *((uint32_t*)&Dir);
+	
+	sendArr[1] = (Byte)(floatchangeTurn);
+	sendArr[2] = (Byte)(floatchangeTurn >> 8);
+	sendArr[3] = (Byte)(floatchangeTurn >> 16);
+	sendArr[4] = (Byte)(floatchangeTurn >> 24);
+	
+	sendArr[5] = (Byte)(floatchangeDir);
+	sendArr[6] = (Byte)(floatchangeDir >> 8);
+	sendArr[7] = (Byte)(floatchangeDir >> 16);
+	sendArr[8] = (Byte)(floatchangeDir >> 24);
+	
+	sendArr[9] = (Byte)cycle;
+	sendArr[10] = (Byte)(cycle >> 8);
+	sendArr[11] = (Byte)(cycle >> 16);
+	sendArr[12] = (Byte)(cycle >> 24);
+	
+	sendArr[13] = (Byte)max_i;
+	sendArr[14] = (Byte)(max_i >> 8);
+	sendArr[15] = (Byte)(max_i >> 16);
+	sendArr[16] = (Byte)(max_i >> 24);
+	
+	sendArr[17] = walkEN;
+	
+	
+	//printy printy in my winky
+	for (int i = 0;i<18;i++){
+		sprintf(buf,"byte %d: %x\n",i,sendArr[i]);
+		sendDebugString(buf);
+		
+		
+	}
+	
+	
+	
+	return 0;
 }
