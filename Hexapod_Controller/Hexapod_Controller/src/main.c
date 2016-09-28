@@ -54,17 +54,17 @@
 //define task functions
 void Task1 (void*);
 void ButtonTask (void*);
-
+void SendFrameTask (void*);
 //function prototypes, move them to a .h one day, one day
 void buildFrame(float Turn,float Dir,int cycle,int max_i,Byte walkEN);
 
 //semaphores
 SemaphoreHandle_t PIOAsem = NULL;
-
+SemaphoreHandle_t FRAMEsem = NULL;
 
 uint32_t ButtonStatus;
-int LEDtg;
-int holdFrame;
+int LEDtg = 0;
+int holdFrame = 0;
 
 Byte sendArr[18];
 
@@ -84,11 +84,12 @@ int main (void){
 
 	board_init();
 	//DW1000_toggleGPIO_MODE();
-	xTaskCreate(Task1,"TASK1",200,NULL,2,NULL);
-	xTaskCreate(ButtonTask,"BUTTONTASK",200,NULL,1,NULL);
-	pio_set(LED1);
-	pio_set(LED2);
-	
+	xTaskCreate(Task1,"TASK1",600,NULL,2,NULL);
+	xTaskCreate(ButtonTask,"BUTTONTASK",600,NULL,1,NULL);
+	xTaskCreate(SendFrameTask,"SENDFRAMETASK",600,NULL,3,NULL);
+
+	pio_clear(LED1);
+	pio_clear(LED1);
 	sendDebugString("Lights on\n Hi Shovel Lord\n");
 	vTaskStartScheduler();
 	
@@ -98,10 +99,12 @@ int main (void){
 }
 
 
+
 void Task1 (void* pvParameters) {
 	int tg = 1;
 	
 	pio_clear(LED1);
+	pio_clear(LED2);
 	
 	
 	
@@ -130,6 +133,33 @@ void Task1 (void* pvParameters) {
 
 }
 
+
+void SendFrameTask (void* pvParameters){
+	int sendlength = 18;
+	
+	for (;;){
+		
+		
+		if (FRAMEsem !=NULL){
+			if(xSemaphoreTake(FRAMEsem,0xFFFF) == pdTRUE){
+				
+				cmdDWMsend("uracunt",7);
+				//cmdDWMsend(sendArr,sendlength);
+				
+				
+				xSemaphoreGive(FRAMEsem);
+			}
+		}
+	
+	
+	
+	vTaskDelay(500);
+	}
+	
+	
+	
+}
+
 void ButtonTask(void* pvParameters){
 	
 	int tg1 = 1;
@@ -155,6 +185,7 @@ void ButtonTask(void* pvParameters){
 	Byte walkEN = 0;
 	
 	PIOAsem = xSemaphoreCreateBinary();
+	FRAMEsem = xSemaphoreCreateMutex();
 	
 	//shit for stuff
 	char buf[40];
@@ -176,13 +207,8 @@ void ButtonTask(void* pvParameters){
 					sendDebugString("Push Switch 1\n");
 					
 					
-<<<<<<< HEAD
-					
-					
-					
 					//DW1000_toggleGPIO_MODE();
-=======
->>>>>>> origin/master
+					
 					
 					
 					/*
@@ -309,12 +335,13 @@ void ButtonTask(void* pvParameters){
 					
 					
 					case(SW4Up) :
-					sendDebugString("NAV4 Up\n");
+					
 					
 					
 					SW4Uptg = !SW4Uptg;
 					
 					if (SW4Uptg){
+						sendDebugString("NAV4 Up On\n");
 						moveTurn = 0;
 						movDir = 0;
 						cycle = 60;
@@ -327,7 +354,7 @@ void ButtonTask(void* pvParameters){
 						
 					}
 					else{
-						
+						sendDebugString("NAV4 Up Off\n");
 						walkEN = 0;
 						holdFrame = 0;
 						pio_clear(LED1);
@@ -393,7 +420,7 @@ void ButtonTask(void* pvParameters){
 						walkEN = 1;
 						holdFrame = 1;
 						
-						pio_set(LED1);
+						pio_set(LED2);
 						LEDtg = 1;
 						
 					}
@@ -401,7 +428,7 @@ void ButtonTask(void* pvParameters){
 						
 						walkEN = 0;
 						holdFrame = 0;
-						pio_clear(LED1);
+						pio_clear(LED2);
 						LEDtg = 0;
 					}
 					break;
@@ -490,13 +517,18 @@ void ButtonTask(void* pvParameters){
 					
 					
 				}
-				buildFrame(moveTurn,movDir,cycle,max_i,walkEN);
+				if (FRAMEsem !=NULL){
+					if(xSemaphoreTake(FRAMEsem,0xFFFF) == pdTRUE){
+						
+						buildFrame(moveTurn,movDir,cycle,max_i,walkEN);
 				
 				
-				
+						xSemaphoreGive(FRAMEsem);
+				}
 			}
 		}
 	}
+}
 }
 
 
@@ -565,7 +597,4 @@ void buildFrame(float Turn,float Dir,int cycle,int max_i,Byte walkEN) {
 		
 	}
 	
-	
-	
-	return 0;
 }

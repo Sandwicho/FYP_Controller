@@ -174,7 +174,9 @@ src/DW1000.d src/DW1000.o: ../src/DW1000.c ../src/DW1000.h ../src/asf.h \
  ../src/ASF/sam/drivers/usart/usart.h ../src/config/conf_uart_serial.h \
  ../src/ASF/sam/drivers/wdt/wdt.h ../src/ASF/sam/drivers/xdmac/xdmac.h \
  ../src/ASF/sam/drivers/pio/pio_handler.h \
- c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h
 
 ../src/DW1000.h:
 
@@ -549,3 +551,7 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/ASF/sam/drivers/pio/pio_handler.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h:
+
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h:
+
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h:

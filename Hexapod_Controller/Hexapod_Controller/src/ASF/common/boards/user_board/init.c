@@ -122,6 +122,8 @@ void board_init(void)
 		
 		delay_ms(10);
 		//DW1000_initialise();
+		DW1000_initialise();
+		delay_ms(10);
 		DW1000_toggleGPIO_MODE();
 		
 		

@@ -17,6 +17,7 @@
 
 #include <asf.h>
 #include <math.h>
+#include <string.h>
 
 /****************************************************************************//**
  * @brief Bit definitions for register DEV_ID
@@ -1299,6 +1300,7 @@
 		void DW1000_startRx();
 		void DW1000_startTxRx();
 		void DW1000_stopTxRx();
+		void cmdDWMsend(char* tosend, int charlen);
 				
 		/* Global internal variables */
 		int DW1000__ss;								// Slave Select number (53 for Tx, 47 for Rx)

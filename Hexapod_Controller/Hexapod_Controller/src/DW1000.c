@@ -74,12 +74,11 @@ void DW1000_initialise() {
 	//digitalWrite(DW1000__rst, HIGH);
 	//delay(5);
 
-	// Channel, preamble, bitrate selection
-	 DW1000_writeReg(CHAN_CTRL_ID, DW1000_NO_SUB, DW1000_NO_OFFSET, 0x29460033, CHAN_CTRL_LEN);
-	// DW1000_writeReg(TX_FCTRL_ID, NO_SUB, NO_OFFSET, 0x0015400C, TX_FCTRL_LEN);
+	 DW1000_writeReg(CHAN_CTRL_ID, DW1000_NO_SUB, DW1000_NO_OFFSET, 0x08440011, CHAN_CTRL_LEN);
+	 //DW1000_writeReg(TX_FCTRL_ID, NO_SUB, NO_OFFSET, 0x0015400C, TX_FCTRL_LEN);
 	 DW1000_writeReg(ACK_RESP_T_ID, DW1000_NO_SUB, DW1000_NO_OFFSET, 0x00000000, ACK_RESP_T_LEN); // changed
 	 DW1000_writeReg(SYS_CFG_ID, DW1000_NO_SUB, DW1000_NO_OFFSET, 0x00441200, SYS_CFG_LEN); // changed
-	 DW1000_writeReg(TX_POWER_ID, DW1000_NO_SUB, DW1000_NO_OFFSET, 0x6F6F6F6F, TX_POWER_LEN);
+	 DW1000_writeReg(TX_POWER_ID, DW1000_NO_SUB, DW1000_NO_OFFSET, 0x75757575, TX_POWER_LEN);
 
 	// Default values that should be modified
 	 DW1000_writeReg(AGC_CTRL_ID, DW1000_SUB, AGC_TUNE1_OFFSET, (AGC_TUNE1_16M & AGC_TUNE1_MASK), AGC_TUNE1_LEN);
@@ -463,4 +462,10 @@ void DW1000_writeReg(uint8_t cmd, int subindex, uint16_t offset, uint64_t buffer
     	//SPI.transfer(data[i]);
     //}
     //digitalWrite(_ss, HIGH);
+}
+
+void cmdDWMsend(char* tosend, int charlen) {
+	DW1000_writeTxBuffer(0,tosend,charlen);
+	DW1000_setTxFrameControl( 0x000D0000 | 0x7F&charlen  );
+	DW1000_startTx();
 }
