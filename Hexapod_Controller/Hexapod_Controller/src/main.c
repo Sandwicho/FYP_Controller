@@ -65,6 +65,7 @@ SemaphoreHandle_t FRAMEsem = NULL;
 uint32_t ButtonStatus;
 int LEDtg = 0;
 int holdFrame = 0;
+int sendFrame = 0;
 
 Byte sendArr[18];
 
@@ -136,21 +137,41 @@ void Task1 (void* pvParameters) {
 
 void SendFrameTask (void* pvParameters){
 	int sendlength = 18;
-	
+	int status = 0;
+	char buf[20];
+	char rxbuf[10];
 	for (;;){
-		
-		
-		if (FRAMEsem !=NULL){
-			if(xSemaphoreTake(FRAMEsem,0xFFFF) == pdTRUE){
+		sendFrame = 1; // kill this
+		if (sendFrame){
+			if (FRAMEsem !=NULL){
+				if(xSemaphoreTake(FRAMEsem,0xFFFF) == pdTRUE){
+					DW1000_clearSystemStatus(0xFFFFFFFF);
+					rxbuf[0] = "1";
+					rxbuf[1] = "2";
+					rxbuf[2] = "3";
+					rxbuf[3] = "4";
+					cmdDWMsend(rxbuf,4);
+					delay_ms(2);
+					//cmdDWMsend(sendArr,sendlength);
+					//sendDebugString("HEIL HITLER!!\n");
+					status = DW1000_readSystemStatus();
+					sprintf(buf,"%x\n",status);
+					sendDebugString(buf);
+					holdFrame = 1; //kill this
+					if(holdFrame){
+						
+					
+					
+					}
+					else{
+						sendFrame = 0;
+						
+					}
 				
-				cmdDWMsend("uracunt",7);
-				//cmdDWMsend(sendArr,sendlength);
-				
-				
-				xSemaphoreGive(FRAMEsem);
+					xSemaphoreGive(FRAMEsem);
+				}
 			}
 		}
-	
 	
 	
 	vTaskDelay(500);
@@ -189,7 +210,7 @@ void ButtonTask(void* pvParameters){
 	
 	//shit for stuff
 	char buf[40];
-	char send[40];
+	
 	float testfloat;
 	int i,led = 0;
 	
@@ -200,6 +221,8 @@ void ButtonTask(void* pvParameters){
 		if( PIOAsem !=NULL){
 			
 			if( xSemaphoreTake(PIOAsem,0xFFFF) == pdTRUE){
+				
+				sendFrame = 1;
 				
 				switch(ButtonStatus){
 					
