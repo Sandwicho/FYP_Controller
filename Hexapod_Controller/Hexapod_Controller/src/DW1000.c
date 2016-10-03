@@ -234,7 +234,7 @@ void DW1000_toggleGPIO_MODE() {
 	//read the gio_mode register so we collect any of the reserved bits, not necessary for this one its all 0's  
 	led = DW1000_readReg(GPIO_CTRL_ID, DW1000_SUB, GPIO_MODE_OFFSET, GPIO_MODE_LEN);
 	//write to set up all the gpios as leds plus an extra 4 in the first 5, all the cool kids are doing it
-	DW1000_writeReg(GPIO_CTRL_ID, DW1000_SUB, GPIO_MODE_OFFSET,0x5540, GPIO_MODE_LEN);
+	DW1000_writeReg(GPIO_CTRL_ID, DW1000_SUB, GPIO_MODE_OFFSET,0x1540, GPIO_MODE_LEN);
 	
 	//read the ctrl0 register to get all those reserved bits
 	led = DW1000_readReg(PMSC_ID, DW1000_SUB, PMSC_CTRL0_OFFSET, PMSC_CTRL0_LEN);
