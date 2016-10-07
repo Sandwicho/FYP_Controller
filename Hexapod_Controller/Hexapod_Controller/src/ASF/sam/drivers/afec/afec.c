@@ -284,7 +284,7 @@ void afec_ch_get_config_defaults(struct afec_ch_config *const cfg)
 	Assert(cfg);
 
 	cfg->diff = false;
-   	cfg->gain = AFEC_GAINVALUE_1;
+   	cfg->gain = AFEC_GAINVALUE_2;
 
 }
 

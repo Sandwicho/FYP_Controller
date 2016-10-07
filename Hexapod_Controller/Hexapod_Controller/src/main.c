@@ -57,6 +57,7 @@ void ButtonTask (void*);
 void SendFrameTask (void*);
 //function prototypes, move them to a .h one day, one day
 void buildFrame(float Turn,float Dir,int cycle,int max_i,Byte walkEN);
+uint32_t getAnalog(int channel);
 
 //semaphores
 SemaphoreHandle_t PIOAsem = NULL;
@@ -66,6 +67,9 @@ uint32_t ButtonStatus;
 int LEDtg = 0;
 int holdFrame = 0;
 int sendFrame = 0;
+int button = 0;
+int sendlength = 0;
+int cycle = 0;
 
 Byte sendArr[18];
 
@@ -103,7 +107,8 @@ int main (void){
 
 void Task1 (void* pvParameters) {
 	int tg = 1;
-	
+	uint32_t readAnalog = 0;
+	char buf[20];
 	pio_clear(LED1);
 	pio_clear(LED2);
 	
@@ -112,7 +117,16 @@ void Task1 (void* pvParameters) {
 	
 	for(;;){
 		
-		if(LEDtg)
+		
+		readAnalog = getAnalog(0);
+		sprintf(buf,"y: %f\n",(float)readAnalog);
+		sendDebugString(buf);
+		
+		readAnalog = getAnalog(1);
+		sprintf(buf,"x: %f\n",(float)readAnalog);
+		sendDebugString(buf);
+		
+		if(LEDtg){
 		
 		
 		if (tg){
@@ -128,36 +142,33 @@ void Task1 (void* pvParameters) {
 			//sendDebugString("Fresh\n");
 		}
 		
-		
-		vTaskDelay(1000);
-	}
+		}
+		vTaskDelay(200);
+	
 
+}
 }
 
 
 void SendFrameTask (void* pvParameters){
-	int sendlength = 18;
+	//int sendlength = 18;
 	int status = 0;
 	char buf[20];
 	char rxbuf[10];
 	for (;;){
-		sendFrame = 1; // kill this
+	 // kill this
 		if (sendFrame){
 			if (FRAMEsem !=NULL){
 				if(xSemaphoreTake(FRAMEsem,0xFFFF) == pdTRUE){
-					DW1000_clearSystemStatus(0xFFFFFFFF);
-					rxbuf[0] = "1";
-					rxbuf[1] = "2";
-					rxbuf[2] = "3";
-					rxbuf[3] = "4";
-					cmdDWMsend(rxbuf,4);
-					delay_ms(2);
-					//cmdDWMsend(sendArr,sendlength);
+					//DW1000_clearSystemStatus(0xFFFFFFFF);
+				
+					
+					cmdDWMsend(sendArr,sendlength+2);
 					//sendDebugString("HEIL HITLER!!\n");
 					status = DW1000_readSystemStatus();
 					sprintf(buf,"%x\n",status);
 					sendDebugString(buf);
-					holdFrame = 1; //kill this
+					 //kill this
 					if(holdFrame){
 						
 					
@@ -186,6 +197,7 @@ void ButtonTask(void* pvParameters){
 	int tg1 = 1;
 	int tg2 = 1;
 	int tgd = 1;
+	int tgstand = 0;
 	
 	int SW4Uptg = 0;
 	int SW4Downtg = 0;
@@ -229,6 +241,18 @@ void ButtonTask(void* pvParameters){
 					case(Push1) :
 					sendDebugString("Push Switch 1\n");
 					
+					button = 1;
+					sendlength = 2;
+					if (!tgstand){
+						sendArr[0] = 4;
+						sendArr[1] = 1;
+						tgstand = !tgstand;
+					} 
+					else{
+						sendArr[0] = 4;
+						sendArr[1] = 0;
+						tgstand = !tgstand;
+					}
 					
 					//DW1000_toggleGPIO_MODE();
 					
@@ -365,7 +389,7 @@ void ButtonTask(void* pvParameters){
 					
 					if (SW4Uptg){
 						sendDebugString("NAV4 Up On\n");
-						moveTurn = 0;
+						moveTurn = 0.2;
 						movDir = 0;
 						cycle = 60;
 						max_i = 30;
@@ -396,7 +420,7 @@ void ButtonTask(void* pvParameters){
 					
 					
 					if (SW4Downtg){
-						moveTurn = 0;
+						moveTurn = 0.2;
 						movDir = 3.14;
 						cycle = 60;
 						max_i = 30;
@@ -540,6 +564,7 @@ void ButtonTask(void* pvParameters){
 					
 					
 				}
+				if (!button){
 				if (FRAMEsem !=NULL){
 					if(xSemaphoreTake(FRAMEsem,0xFFFF) == pdTRUE){
 						
@@ -549,6 +574,8 @@ void ButtonTask(void* pvParameters){
 						xSemaphoreGive(FRAMEsem);
 				}
 			}
+				}
+				button = 0;
 		}
 	}
 }
@@ -583,7 +610,7 @@ void buildFrame(float Turn,float Dir,int cycle,int max_i,Byte walkEN) {
 	//kill this later yo
 	char buf[40];
 	//************************
-	
+	sendlength = 18;
 	sendArr[0] = 3;
 	
 	floatchangeTurn = *((uint32_t*)&Turn);
@@ -619,5 +646,33 @@ void buildFrame(float Turn,float Dir,int cycle,int max_i,Byte walkEN) {
 		
 		
 	}
-	
 }
+	
+	uint32_t getAnalog(int channel) {
+	uint32_t result;
+	
+	if (channel == 0){
+	afec_channel_enable(AFEC0, AFEC_CHANNEL_0);
+	afec_start_software_conversion(AFEC0);
+	
+	while (!(afec_get_interrupt_status(AFEC0) & (1 << AFEC_CHANNEL_0)));
+	//delay_ms(10);
+	result = afec_channel_get_value(AFEC0, AFEC_CHANNEL_0);
+	//afec_channel_disable(AFEC0, AFEC_CHANNEL_0);
+	}
+	else{
+	afec_channel_enable(AFEC0, AFEC_CHANNEL_1);
+	afec_start_software_conversion(AFEC0);
+	
+	while (!(afec_get_interrupt_status(AFEC0) & (1 << AFEC_CHANNEL_1)));
+	//delay_ms(10);
+	result = afec_channel_get_value(AFEC0, AFEC_CHANNEL_1);
+	//afec_channel_disable(AFEC0, AFEC_CHANNEL_1);
+		
+	}
+	return result;
+}
+	
+
+	
+

@@ -82,6 +82,63 @@ void board_init(void)
 		pio_set_output(LED2,LOW,DISABLE,DISABLE);
 		//sendDebugString("LED INITIALIZATION - FINISHED\n");
 		
+	/* ######################################
+	   ######################################
+                  ADC
+	   ######################################
+	   ###################################### */
+		uint32_t reg = 0;
+		
+		struct afec_config {
+			uint32_t afec_clock;
+			bool anach;
+			uint8_t ibctl;
+			uint32_t mck;
+			enum afec_resolution resolution;
+			enum afec_startup_time startup_time;
+			bool stm;
+			bool tag;
+			uint8_t tracktim;
+			uint8_t transfer;
+			bool useq;
+			}afec_cfg;
+			
+		struct afec_ch_config {
+			bool diff;
+			enum afec_gainvalue gain;
+			
+			}afec_ch_cfg;
+		
+		afec_ch_cfg.diff = false;
+		afec_ch_cfg.gain = AFEC_GAINVALUE_1;
+		
+		//pmc_enable_periph_clk(AFEC0);
+		
+		afec_enable(AFEC0);
+		afec_get_config_defaults(&afec_cfg);
+		
+		afec_init(AFEC0, &afec_cfg);
+		
+		afec_channel_set_analog_offset(AFEC0,AFEC_CHANNEL_0,1024);
+		afec_enable_interrupt(AFEC0,AFEC_INTERRUPT_ALL);
+		
+		
+		afec_channel_enable(AFEC0, AFEC_CHANNEL_0);
+		afec_channel_enable(AFEC0, AFEC_CHANNEL_1);
+		
+		//afec_ch_set_config(AFEC0,AFEC_CHANNEL_0,&afec_ch_cfg);
+		
+		
+		//pio_pull_up(PIOD,1<<30,0);
+		//pio_pull_down(PIOD,1<<30,0);
+		//reg = AFEC0->AFEC_COCR;
+		//reg |= 0x400;
+		//AFEC0->AFEC_CGR = reg;
+		//afec_ch_get_config_defaults(&afec_ch_cfg);
+		
+		
+		//afec_set_trigger(AFEC0, AFEC_TRIG_SW);
+		//afec_channel_enable(AFEC0, AFEC_CHANNEL_0);
 		
 		
 	/* ######################################
@@ -161,6 +218,8 @@ void board_init(void)
 		pmc_enable_periph_clk(ID_PIOA);
 		pio_set_input(PIOA,PIOA_BUTTSANDDIR,PIO_PULLUP|PIO_DEBOUNCE);
 		pio_set_debounce_filter(PIOA,PIOA_BUTTSANDDIR,100);
+		
+
 	
 	/* ######################################
 	   ######################################
