@@ -49,6 +49,8 @@
 #define SW5Right	PIO_PA23
 #define SW5Push		PIO_PA24
 
+#define ANACTRL 1
+#define ANA_THRESH 250
 
 
 //define task functions
@@ -57,6 +59,7 @@ void ButtonTask (void*);
 void SendFrameTask (void*);
 //function prototypes, move them to a .h one day, one day
 void buildFrame(float Turn,float Dir,int cycle,int max_i,Byte walkEN);
+void buildFrameExtd(float Turn,float Dir,int cycle,int max_i,Byte walkEN,int stance, int height, int pUp, int stride);
 uint32_t getAnalog(int channel);
 
 //semaphores
@@ -71,13 +74,18 @@ int button = 0;
 int sendlength = 0;
 int cycle = 0;
 
-Byte sendArr[18];
+int analogFlag = 0;
+
+float anaMag = 0;
+float anaAng = 0;
+
+Byte sendArr[40];
 
 /*
 struct spi_device2{
-	uint32_t id;
-	}spidevice1;
-	*/
+uint32_t id;
+}spidevice1;
+*/
 
 
 
@@ -107,7 +115,8 @@ int main (void){
 
 void Task1 (void* pvParameters) {
 	int tg = 1;
-	uint32_t readAnalog = 0;
+	int AnaX = 0;
+	int AnaY = 0;
 	char buf[20];
 	pio_clear(LED1);
 	pio_clear(LED2);
@@ -118,35 +127,40 @@ void Task1 (void* pvParameters) {
 	for(;;){
 		
 		
-		readAnalog = getAnalog(0);
-		sprintf(buf,"y: %f\n",(float)readAnalog);
-		sendDebugString(buf);
+		AnaY = 2048-getAnalog(0);
+		AnaX = getAnalog(1)-2048;
+		anaAng = atan2f(AnaY,AnaX) - (M_PI/2.00);
+		anaMag = sqrt(AnaX*AnaX + AnaY*AnaY);
 		
-		readAnalog = getAnalog(1);
-		sprintf(buf,"x: %f\n",(float)readAnalog);
-		sendDebugString(buf);
+		if(anaMag > ANA_THRESH) {
+			button = 0;
+			xSemaphoreGive(PIOAsem);
+			analogFlag = 1;
+		}
+		//sprintf(buf,"anaMag:%f, anaAngle:%f\n",sqrt(AnaX*AnaX + AnaY*AnaY));
+		//sendDebugString(buf);
 		
 		if(LEDtg){
-		
-		
-		if (tg){
 			
-			pio_set(LED1);
-			tg = !tg;
-			//sendDebugString("On\n");
-		}
-		else {
 			
-			pio_clear(LED1);
-			tg = !tg;
-			//sendDebugString("Fresh\n");
+			if (tg){
+				
+				pio_set(LED1);
+				tg = !tg;
+				//sendDebugString("On\n");
+			}
+			else {
+				
+				pio_clear(LED1);
+				tg = !tg;
+				//sendDebugString("Fresh\n");
+			}
+			
 		}
+		vTaskDelay(20);
 		
-		}
-		vTaskDelay(200);
-	
 
-}
+	}
 }
 
 
@@ -156,36 +170,36 @@ void SendFrameTask (void* pvParameters){
 	char buf[20];
 	char rxbuf[10];
 	for (;;){
-	 // kill this
+		// kill this
 		if (sendFrame){
 			if (FRAMEsem !=NULL){
 				if(xSemaphoreTake(FRAMEsem,0xFFFF) == pdTRUE){
 					//DW1000_clearSystemStatus(0xFFFFFFFF);
-				
+					
 					
 					cmdDWMsend(sendArr,sendlength+2);
 					//sendDebugString("HEIL HITLER!!\n");
 					status = DW1000_readSystemStatus();
 					sprintf(buf,"%x\n",status);
 					sendDebugString(buf);
-					 //kill this
+					//kill this
 					if(holdFrame){
 						
-					
-					
+						
+						
 					}
 					else{
 						sendFrame = 0;
 						
 					}
-				
+					
 					xSemaphoreGive(FRAMEsem);
 				}
 			}
 		}
-	
-	
-	vTaskDelay(500);
+		
+		
+		vTaskDelay(500);
 	}
 	
 	
@@ -235,7 +249,8 @@ void ButtonTask(void* pvParameters){
 			if( xSemaphoreTake(PIOAsem,0xFFFF) == pdTRUE){
 				
 				sendFrame = 1;
-				
+				if(!analogFlag){ 
+					
 				switch(ButtonStatus){
 					
 					case(Push1) :
@@ -247,7 +262,7 @@ void ButtonTask(void* pvParameters){
 						sendArr[0] = 4;
 						sendArr[1] = 1;
 						tgstand = !tgstand;
-					} 
+					}
 					else{
 						sendArr[0] = 4;
 						sendArr[1] = 0;
@@ -317,7 +332,7 @@ void ButtonTask(void* pvParameters){
 						tg1 = !tg1;
 					}
 					break;
-					
+#if ~ANACTRL
 					case(SW4Left) :
 					sendDebugString("NAV4 Left\n");
 					
@@ -453,6 +468,7 @@ void ButtonTask(void* pvParameters){
 						tg1 = !tg1;
 					}
 					break;
+#endif
 					
 					case(SW5Left) :
 					sendDebugString("NAV5 Left\n");
@@ -561,24 +577,40 @@ void ButtonTask(void* pvParameters){
 						tgd = !tgd;
 					}
 					break;
-					
-					
 				}
+				}
+				
 				if (!button){
-				if (FRAMEsem !=NULL){
-					if(xSemaphoreTake(FRAMEsem,0xFFFF) == pdTRUE){
-						
-						buildFrame(moveTurn,movDir,cycle,max_i,walkEN);
-				
-				
-						xSemaphoreGive(FRAMEsem);
+					if (FRAMEsem !=NULL){
+						if(xSemaphoreTake(FRAMEsem,0xFFFF) == pdTRUE){
+							int stance = 165;
+							int height = 20;
+							int pUp = 85;
+							int stride = 65;
+							
+							if(analogFlag){
+							stance =  165;
+							//default is 20; scale to 100 at sideways
+							height = 20 + 80*(fabsf(sin(anaAng)));
+							//default is 85; scale to 40 at sideways
+							pUp    = 85 - 45*(fabsf(sin(anaAng)));
+							//default is 65; reduce to 40 at sideways
+							stride = 65 - 25*(fabsf(sin(anaAng)));
+							//start at 100 for 250; move to 30 at 2100
+							cycle = 100 - (anaMag-250.00)*0.03783;
+							//walkEN
+							walkEN = 1;
+							}
+							buildFrameExtd(moveTurn,anaAng,cycle,max_i,walkEN,stance,height,pUp,stride);
+							xSemaphoreGive(FRAMEsem);
+						}
+					}
 				}
-			}
-				}
+				analogFlag = 0;
 				button = 0;
+			}
 		}
 	}
-}
 }
 
 
@@ -643,36 +675,100 @@ void buildFrame(float Turn,float Dir,int cycle,int max_i,Byte walkEN) {
 	for (int i = 0;i<18;i++){
 		sprintf(buf,"byte %d: %x\n",i,sendArr[i]);
 		sendDebugString(buf);
-		
-		
 	}
-}
 	
-	uint32_t getAnalog(int channel) {
+}
+
+void buildFrameExtd(float Turn,float Dir,int cycle,int max_i,Byte walkEN,int stance, int height, int pUp, int stride) {
+	int floatchangeTurn = 0;
+	int floatchangeDir = 0;
+	
+	//************************
+	//kill this later yo
+	char buf[40];
+	//************************
+	sendlength = 35;
+	sendArr[0] = 2;
+	
+	floatchangeTurn = *((uint32_t*)&Turn);
+	floatchangeDir = *((uint32_t*)&Dir);
+	
+	sendArr[1] = (Byte)(floatchangeTurn);
+	sendArr[2] = (Byte)(floatchangeTurn >> 8);
+	sendArr[3] = (Byte)(floatchangeTurn >> 16);
+	sendArr[4] = (Byte)(floatchangeTurn >> 24);
+	
+	sendArr[5] = (Byte)(floatchangeDir);
+	sendArr[6] = (Byte)(floatchangeDir >> 8);
+	sendArr[7] = (Byte)(floatchangeDir >> 16);
+	sendArr[8] = (Byte)(floatchangeDir >> 24);
+	
+	sendArr[9] = (Byte)cycle;
+	sendArr[10] = (Byte)(cycle >> 8);
+	sendArr[11] = (Byte)(cycle >> 16);
+	sendArr[12] = (Byte)(cycle >> 24);
+	
+	sendArr[13] = (Byte)max_i;
+	sendArr[14] = (Byte)(max_i >> 8);
+	sendArr[15] = (Byte)(max_i >> 16);
+	sendArr[16] = (Byte)(max_i >> 24);
+	
+	sendArr[17] = walkEN;
+	
+	//stance
+	sendArr[18] = (Byte)stance;
+	sendArr[19] = (Byte)(stance >> 8);
+	sendArr[20] = (Byte)(stance >> 16);
+	sendArr[21] = (Byte)(stance >> 24);
+	
+	//height
+	sendArr[22] = (Byte)height;
+	sendArr[23] = (Byte)(height >> 8);
+	sendArr[24] = (Byte)(height >> 16);
+	sendArr[25] = (Byte)(height >> 24);
+	
+	//pull up
+	sendArr[26] = (Byte)pUp;
+	sendArr[27] = (Byte)(pUp >> 8);
+	sendArr[28] = (Byte)(pUp >> 16);
+	sendArr[29] = (Byte)(pUp >> 24);
+	
+	//stride
+	sendArr[30] = (Byte)stride;
+	sendArr[31] = (Byte)(stride >> 8);
+	sendArr[32] = (Byte)(stride >> 16);
+	sendArr[33] = (Byte)(stride >> 24);
+	
+	//retval
+	sendArr[34] = 1;
+}
+
+
+uint32_t getAnalog(int channel) {
 	uint32_t result;
 	
 	if (channel == 0){
-	afec_channel_enable(AFEC0, AFEC_CHANNEL_0);
-	afec_start_software_conversion(AFEC0);
-	
-	while (!(afec_get_interrupt_status(AFEC0) & (1 << AFEC_CHANNEL_0)));
-	//delay_ms(10);
-	result = afec_channel_get_value(AFEC0, AFEC_CHANNEL_0);
-	//afec_channel_disable(AFEC0, AFEC_CHANNEL_0);
+		afec_channel_enable(AFEC0, AFEC_CHANNEL_0);
+		afec_start_software_conversion(AFEC0);
+		
+		while (!(afec_get_interrupt_status(AFEC0) & (1 << AFEC_CHANNEL_0)));
+		//delay_ms(10);
+		result = afec_channel_get_value(AFEC0, AFEC_CHANNEL_0);
+		//afec_channel_disable(AFEC0, AFEC_CHANNEL_0);
 	}
 	else{
-	afec_channel_enable(AFEC0, AFEC_CHANNEL_1);
-	afec_start_software_conversion(AFEC0);
-	
-	while (!(afec_get_interrupt_status(AFEC0) & (1 << AFEC_CHANNEL_1)));
-	//delay_ms(10);
-	result = afec_channel_get_value(AFEC0, AFEC_CHANNEL_1);
-	//afec_channel_disable(AFEC0, AFEC_CHANNEL_1);
+		afec_channel_enable(AFEC0, AFEC_CHANNEL_1);
+		afec_start_software_conversion(AFEC0);
+		
+		while (!(afec_get_interrupt_status(AFEC0) & (1 << AFEC_CHANNEL_1)));
+		//delay_ms(10);
+		result = afec_channel_get_value(AFEC0, AFEC_CHANNEL_1);
+		//afec_channel_disable(AFEC0, AFEC_CHANNEL_1);
 		
 	}
 	return result;
 }
-	
 
-	
+
+
 

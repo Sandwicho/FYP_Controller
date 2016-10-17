@@ -110,24 +110,24 @@ void board_init(void)
 			}afec_ch_cfg;
 		
 		afec_ch_cfg.diff = false;
-		afec_ch_cfg.gain = AFEC_GAINVALUE_1;
+		afec_ch_cfg.gain = AFEC_GAINVALUE_0;
 		
-		//pmc_enable_periph_clk(AFEC0);
+		pmc_enable_periph_clk(AFEC0);
 		
-		afec_enable(AFEC0);
+		//afec_disable(AFEC0);
 		afec_get_config_defaults(&afec_cfg);
-		
 		afec_init(AFEC0, &afec_cfg);
 		
-		afec_channel_set_analog_offset(AFEC0,AFEC_CHANNEL_0,1024);
-		afec_enable_interrupt(AFEC0,AFEC_INTERRUPT_ALL);
+		afec_channel_set_analog_offset(AFEC0,AFEC_CHANNEL_0,1023>>1);
+		afec_channel_set_analog_offset(AFEC0,AFEC_CHANNEL_1,1023>>1);
+		//afec_enable_interrupt(AFEC0,AFEC_INTERRUPT_ALL);
 		
 		
 		afec_channel_enable(AFEC0, AFEC_CHANNEL_0);
 		afec_channel_enable(AFEC0, AFEC_CHANNEL_1);
 		
 		//afec_ch_set_config(AFEC0,AFEC_CHANNEL_0,&afec_ch_cfg);
-		
+		afec_enable(AFEC0);
 		
 		//pio_pull_up(PIOD,1<<30,0);
 		//pio_pull_down(PIOD,1<<30,0);
