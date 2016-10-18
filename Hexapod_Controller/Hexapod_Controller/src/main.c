@@ -49,20 +49,29 @@
 #define SW5Right	PIO_PA23
 #define SW5Push		PIO_PA24
 
+#define ALL_DIG_STICKS (PIO_PA14|PIO_PA15|PIO_PA16|PIO_PA17|PIO_PA18|PIO_PA19|PIO_PA20|PIO_PA20|PIO_PA22|PIO_PA23|PIO_PA24)
+
 #define ANACTRL 1
 #define ANA_THRESH 250
+
+#define EX_HGT_MAX 100
+#define EX_HGT_MIN 0
 
 
 //define task functions
 void Task1 (void*);
-void ButtonTask (void*);
+void BuildFrameTask (void*);
 void SendFrameTask (void*);
+void AnalogTask (void*);
+void UpdateTask (void*);
+void SendSpecTask (void*);
 //function prototypes, move them to a .h one day, one day
 void buildFrame(float Turn,float Dir,int cycle,int max_i,Byte walkEN);
 void buildFrameExtd(float Turn,float Dir,int cycle,int max_i,Byte walkEN,int stance, int height, int pUp, int stride);
 uint32_t getAnalog(int channel);
 
 //semaphores
+SemaphoreHandle_t CMDFRAMEsem = NULL;
 SemaphoreHandle_t PIOAsem = NULL;
 SemaphoreHandle_t FRAMEsem = NULL;
 
@@ -71,16 +80,22 @@ int LEDtg = 0;
 int holdFrame = 0;
 int sendFrame = 0;
 int button = 0;
-int sendlength = 0;
+
 int cycle = 0;
+
 
 int analogFlag = 0;
 
+uint32_t buttonState = 0;
 float anaMag = 0;
 float anaAng = 0;
 
 Byte sendArr[40];
+int sendlength = 0;
 
+int wasWalking = 0;
+//adjustable paramiters
+int extraHgt = 0;
 /*
 struct spi_device2{
 uint32_t id;
@@ -98,9 +113,12 @@ int main (void){
 	board_init();
 	//DW1000_toggleGPIO_MODE();
 	xTaskCreate(Task1,"TASK1",600,NULL,2,NULL);
-	xTaskCreate(ButtonTask,"BUTTONTASK",600,NULL,1,NULL);
+	xTaskCreate(AnalogTask,"SENDFRAMETASK",600,NULL,4,NULL);
+	xTaskCreate(BuildFrameTask,"BUILDFRAMETASK",600,NULL,5,NULL);
 	xTaskCreate(SendFrameTask,"SENDFRAMETASK",600,NULL,3,NULL);
-
+	xTaskCreate(UpdateTask,"UPDATETASK",600,NULL,6,NULL);
+	xTaskCreate(SendSpecTask,"SENDSPECTASK",600,NULL,7,NULL);
+	
 	pio_clear(LED1);
 	pio_clear(LED1);
 	sendDebugString("Lights on\n Hi Shovel Lord\n");
@@ -112,11 +130,9 @@ int main (void){
 }
 
 
-
+//flashy task
 void Task1 (void* pvParameters) {
 	int tg = 1;
-	int AnaX = 0;
-	int AnaY = 0;
 	char buf[20];
 	pio_clear(LED1);
 	pio_clear(LED2);
@@ -125,514 +141,186 @@ void Task1 (void* pvParameters) {
 	
 	
 	for(;;){
+		//sprintf(buf,"anaMag:%f, anaAngle:%f\n",sqrt(AnaX*AnaX + AnaY*AnaY));
+		//sendDebugString(buf);
+
 		
+		if (tg){
+			pio_set(LED1);
+			tg = !tg;
+			//sendDebugString("On\n");
+		}
+		else {
+			pio_clear(LED1);
+			tg = !tg;
+			//sendDebugString("Fresh\n");
+		}
+		vTaskDelay(500);
 		
+
+	}
+}
+//done
+void SendFrameTask (void* pvParameters){
+	
+	for (;;){
+		if (FRAMEsem !=NULL){
+			if(xSemaphoreTake(FRAMEsem,0xFFFF) == pdTRUE){
+				cmdDWMsend(sendArr,sendlength+2);
+			}
+		}
+	}
+}
+
+void BuildFrameTask(void* pvParameters){
+	FRAMEsem = xSemaphoreCreateBinary();
+	float moveTurn = 0.2;
+	float movDir = 0;
+	int cycle = 60;
+	int max_i = 45;
+	Byte walkEN = 0;
+	int stance = 165;
+	int height = 20;
+	int pUp = 85;
+	int stride = 65;
+	
+	char buf[20];
+	
+	for(;;){
+		
+		//sprintf(buf,"buttonState: %8x : %8x\n",buttonState&SW5Left,buttonState&SW5Right);
+		//sendDebugString(buf);
+		if(anaMag > ANA_THRESH || !(buttonState&SW5Left) || !(buttonState&SW5Right)) {
+			if(!(buttonState&SW5Left)) moveTurn = -1;
+			else if(!(buttonState&SW5Right)) moveTurn = 1;
+			else moveTurn = 0.2;
+			
+			if(!(anaMag > ANA_THRESH)) anaAng = 0;
+			
+			wasWalking = 5;
+			max_i = 45;
+			stance =  165;
+			//default is 20; scale to 100 at sideways
+			height = (20+extraHgt) + (80-extraHgt)*(fabsf(sin(anaAng)));
+			//default is 85; scale to 40 at sideways
+			pUp    = 85 - 45*(fabsf(sin(anaAng)));
+			//default is 65; reduce to 40 at sideways
+			stride = 65 - 35*(fabsf(sin(anaAng))) - 0.2*extraHgt;
+			//start at 100 for 250; move to 30 at 2100
+			cycle = 100 - (anaMag-250.00)*0.025;
+			//walkEN
+			walkEN = 1;
+			buildFrameExtd(moveTurn,anaAng,cycle,max_i,walkEN,stance,height,pUp,stride);
+			sendlength = 35;
+			xSemaphoreGive(FRAMEsem);
+		}
+		
+		else {
+			if(wasWalking != 0) {
+				wasWalking--;
+				max_i = 0;
+				walkEN = 0;
+				height = (20+extraHgt);
+				buildFrameExtd(moveTurn,anaAng,cycle,max_i,walkEN,stance,height,pUp,stride);
+				sendlength = 35;
+				xSemaphoreGive(FRAMEsem);
+			}
+		}
+		vTaskDelay(200);
+		
+
+	}
+}
+//done
+void AnalogTask (void* pvParameters) {
+	int AnaX = 0;
+	int AnaY = 0;
+	
+	for(;;) {
 		AnaY = 2048-getAnalog(0);
 		AnaX = getAnalog(1)-2048;
 		anaAng = atan2f(AnaY,AnaX) - (M_PI/2.00);
 		anaMag = sqrt(AnaX*AnaX + AnaY*AnaY);
-		
-		if(anaMag > ANA_THRESH) {
-			button = 0;
-			xSemaphoreGive(PIOAsem);
-			analogFlag = 1;
-		}
-		//sprintf(buf,"anaMag:%f, anaAngle:%f\n",sqrt(AnaX*AnaX + AnaY*AnaY));
-		//sendDebugString(buf);
-		
-		if(LEDtg){
-			
-			
-			if (tg){
-				
-				pio_set(LED1);
-				tg = !tg;
-				//sendDebugString("On\n");
-			}
-			else {
-				
-				pio_clear(LED1);
-				tg = !tg;
-				//sendDebugString("Fresh\n");
-			}
-			
-		}
 		vTaskDelay(20);
-		
-
 	}
 }
-
-
-void SendFrameTask (void* pvParameters){
-	//int sendlength = 18;
-	int status = 0;
-	char buf[20];
-	char rxbuf[10];
-	for (;;){
-		// kill this
-		if (sendFrame){
-			if (FRAMEsem !=NULL){
-				if(xSemaphoreTake(FRAMEsem,0xFFFF) == pdTRUE){
-					//DW1000_clearSystemStatus(0xFFFFFFFF);
-					
-					
-					cmdDWMsend(sendArr,sendlength+2);
-					//sendDebugString("HEIL HITLER!!\n");
-					status = DW1000_readSystemStatus();
-					sprintf(buf,"%x\n",status);
-					sendDebugString(buf);
-					//kill this
-					if(holdFrame){
-						
-						
-						
-					}
-					else{
-						sendFrame = 0;
-						
-					}
-					
-					xSemaphoreGive(FRAMEsem);
-				}
-			}
-		}
-		
-		
-		vTaskDelay(500);
-	}
-	
-	
-	
-}
-
-void ButtonTask(void* pvParameters){
-	
-	int tg1 = 1;
-	int tg2 = 1;
-	int tgd = 1;
-	int tgstand = 0;
-	
-	int SW4Uptg = 0;
-	int SW4Downtg = 0;
-	int SW4Lefttg = 0;
-	int SW4Righttg = 0;
-	int SW5Uptg = 0;
-	int SW5Downtg = 0;
-	int SW5Lefttg = 0;
-	int SW5Righttg = 0;
-	int floatchange = 0;
-	
-	
-	
-	float moveTurn = 0;
-	float movDir = 0;
-	int cycle = 60;
-	int max_i = 0;
-	Byte walkEN = 0;
-	
+//done
+void UpdateTask (void* pvParameters) {
 	PIOAsem = xSemaphoreCreateBinary();
-	FRAMEsem = xSemaphoreCreateMutex();
-	
-	//shit for stuff
-	char buf[40];
-	
-	float testfloat;
-	int i,led = 0;
-	
-	//spidevice1.id = 0;
-	
-	for(;;){
-		
+	buttonState = PIOA->PIO_PDSR;
+	for(;;) {
 		if( PIOAsem !=NULL){
-			
-			if( xSemaphoreTake(PIOAsem,0xFFFF) == pdTRUE){
-				
-				sendFrame = 1;
-				if(!analogFlag){ 
-					
-				switch(ButtonStatus){
-					
-					case(Push1) :
-					sendDebugString("Push Switch 1\n");
-					
-					button = 1;
-					sendlength = 2;
-					if (!tgstand){
-						sendArr[0] = 4;
-						sendArr[1] = 1;
-						tgstand = !tgstand;
-					}
-					else{
-						sendArr[0] = 4;
-						sendArr[1] = 0;
-						tgstand = !tgstand;
-					}
-					
-					//DW1000_toggleGPIO_MODE();
-					
-					
-					
-					/*
-					testfloat = 5.5;
-					char *c = (char *) &testfloat;
-					sprintf(buffloat,"float: %x\n",testfloat);
-					try this nigger *((uint32_t*)&variable)
-					sendDebugString(buffloat);
-					sprintf(buffcast,"cast: %x\n",c);
-					sendDebugString(buffcast);
-					sprintf(buffcast,"cast2: %x\n",*c);
-					sendDebugString(buffcast);
-					*/
-					
-					
-					
-					if(tg2){
-						pio_set(LED2);
-						tg2 = !tg2;
-					}
-					else {
-						pio_clear(LED2);
-						tg2 = !tg2;
-					}
-					break;
-					
-					case(Push2) :
-					sendDebugString("Push Switch 2\n");
-					
-					char buf[40];
-					
-					//spi_select_device(SPI0,&spidevice1);
-
-					delay_us(1);
-					sprintf(buf,"TestDevID: 0x%x\n",DW1000_readDeviceIdentifier());
-					sendDebugString(buf);
-					sendDebugString("\n");
-					
-					
-					//spi_deselect_device(SPI0,&spidevice1);
-					
-					sprintf(buf,"SysStatus: 0x%x\n", DW1000_readSystemStatus());
-					sendDebugString(buf);
-					sendDebugString("\n");
-					DW1000_writeReg(PANADR_ID,DW1000_NO_SUB,DW1000_NO_OFFSET,0xDECA2230,PANADR_LEN);
-					sprintf(buf,"ID WRITTEN\nREAD BACK: 0x%x\n",DW1000_readReg(PANADR_ID,DW1000_NO_SUB,DW1000_NO_OFFSET,PANADR_LEN));
-					sendDebugString(buf);
-					
-					//pio_set(PIOB_DWM_RESET);
-					//pio_clear(PIOB_DWM_RESET);
-					
-					
-					if(tg1){
-						pio_set(LED1);
-						tg1 = !tg1;
-					}
-					else {
-						pio_clear(LED1);
-						tg1 = !tg1;
-					}
-					break;
-#if ~ANACTRL
-					case(SW4Left) :
-					sendDebugString("NAV4 Left\n");
-					
-					SW4Lefttg = !SW4Lefttg;
-					
-					if (SW4Lefttg){
-						moveTurn = 0;
-						movDir = 4.71;
-						cycle = 60;
-						max_i = 30;
-						walkEN = 1;
-						holdFrame = 1;
-						
-						pio_set(LED1);
-						LEDtg = 1;
-						
-						floatchange = *((uint32_t*)&movDir);
-						
-						sprintf(buf,"floatchange hex: %x\n",floatchange);
-						sendDebugString(buf);
-						sprintf(buf,"floatchange float: %f\n",floatchange);
-						sendDebugString(buf);
-						sprintf(buf,"float orig: %x\n",movDir);
-						sendDebugString(buf);
-						
-					}
-					else{
-						
-						walkEN = 0;
-						holdFrame = 0;
-						pio_clear(LED1);
-						LEDtg = 0;
-					}
-					break;
-					
-					case(SW4Right) :
-					sendDebugString("NAV4 Right\n");
-					
-					SW4Righttg = !SW4Righttg;
-					
-					if (SW4Righttg){
-						moveTurn = 0;
-						movDir = 1.57;
-						cycle = 60;
-						max_i = 30;
-						walkEN = 1;
-						holdFrame = 1;
-						
-						pio_set(LED1);
-						LEDtg = 1;
-						
-					}
-					else{
-						
-						walkEN = 0;
-						holdFrame = 0;
-						pio_clear(LED1);
-						LEDtg = 0;
-					}
-					break;
-					
-					
-					
-					case(SW4Up) :
-					
-					
-					
-					SW4Uptg = !SW4Uptg;
-					
-					if (SW4Uptg){
-						sendDebugString("NAV4 Up On\n");
-						moveTurn = 0.2;
-						movDir = 0;
-						cycle = 60;
-						max_i = 30;
-						walkEN = 1;
-						holdFrame = 1;
-						
-						pio_set(LED1);
-						LEDtg = 1;
-						
-					}
-					else{
-						sendDebugString("NAV4 Up Off\n");
-						walkEN = 0;
-						holdFrame = 0;
-						pio_clear(LED1);
-						LEDtg = 0;
-					}
-					
-					break;
-					
-					
-					
-					case(SW4Down) :
-					sendDebugString("NAV4 Down\n");
-					
-					
-					SW4Downtg = !SW4Downtg;
-					
-					
-					if (SW4Downtg){
-						moveTurn = 0.2;
-						movDir = 3.14;
-						cycle = 60;
-						max_i = 30;
-						walkEN = 1;
-						holdFrame = 1;
-						
-						pio_set(LED1);
-						LEDtg = 1;
-						
-					}
-					else{
-						
-						walkEN = 0;
-						holdFrame = 0;
-						pio_clear(LED1);
-						LEDtg = 0;
-					}
-					
-					
-					break;
-					
-					case(SW4Push) :
-					sendDebugString("NAV4 Push\n");
-					if(tg1){
-						pio_set(LED1);
-						tg1 = !tg1;
-					}
-					else {
-						pio_clear(LED1);
-						tg1 = !tg1;
-					}
-					break;
-#endif
-					
-					case(SW5Left) :
-					sendDebugString("NAV5 Left\n");
-					
-					SW5Lefttg = !SW5Lefttg;
-					
-					if (SW5Lefttg){
-						moveTurn = -1;
-						movDir = 0;
-						cycle = 60;
-						max_i = 30;
-						walkEN = 1;
-						holdFrame = 1;
-						
-						pio_set(LED2);
-						LEDtg = 1;
-						
-					}
-					else{
-						
-						walkEN = 0;
-						holdFrame = 0;
-						pio_clear(LED2);
-						LEDtg = 0;
-					}
-					break;
-					
-					case(SW5Right) :
-					sendDebugString("NAV5 Right\n");
-					
-					SW5Righttg = !SW5Righttg;
-					
-					if (SW5Righttg){
-						moveTurn = 1;
-						movDir = 0;
-						cycle = 60;
-						max_i = 30;
-						walkEN = 1;
-						holdFrame = 1;
-						
-						pio_set(LED1);
-						LEDtg = 1;
-						
-					}
-					else{
-						
-						walkEN = 0;
-						holdFrame = 0;
-						pio_clear(LED1);
-						LEDtg = 0;
-					}
-					break;
-					
-					case(SW5Up) :
-					sendDebugString("NAV5 Up\n");
-					
-					SW5Uptg = !SW5Uptg;
-					
-					if(tg2){
-						pio_set(LED2);
-						tg2 = !tg2;
-					}
-					else {
-						pio_clear(LED2);
-						tg2 = !tg2;
-					}
-					break;
-					
-					case(SW5Down) :
-					sendDebugString("NAV5 Down\n");
-					
-					SW5Downtg = !SW5Downtg;
-					
-					if(tg2){
-						pio_set(LED2);
-						tg2 = !tg2;
-					}
-					else {
-						pio_clear(LED2);
-						tg2 = !tg2;
-					}
-					break;
-					
-					case(SW5Push) :
-					sendDebugString("NAV5 Push\n");
-					if(tg2){
-						pio_set(LED2);
-						tg2 = !tg2;
-					}
-					else {
-						pio_clear(LED2);
-						tg2 = !tg2;
-					}
-					break;
-					
-					default :
-					sendDebugString("ANALOGUE BITCH!\n");
-					if(tgd){
-						pio_set(LED1);
-						pio_set(LED2);
-						tgd = !tgd;
-					}
-					else {
-						pio_clear(LED1);
-						pio_clear(LED2);
-						tgd = !tgd;
-					}
-					break;
+			if( xSemaphoreTake(PIOAsem,0xFFFF) == pdTRUE){				
+				buttonState = PIOA->PIO_PDSR;
+				if(ButtonStatus&SW4Up && !(buttonState&SW4Up)) {
+					extraHgt+=5;
+					wasWalking = 1;
 				}
+				if(ButtonStatus&SW4Down && !(buttonState&SW4Down)) {
+					extraHgt-=5;
+					wasWalking = 1;
 				}
-				
-				if (!button){
-					if (FRAMEsem !=NULL){
-						if(xSemaphoreTake(FRAMEsem,0xFFFF) == pdTRUE){
-							int stance = 165;
-							int height = 20;
-							int pUp = 85;
-							int stride = 65;
-							
-							if(analogFlag){
-							stance =  165;
-							//default is 20; scale to 100 at sideways
-							height = 20 + 80*(fabsf(sin(anaAng)));
-							//default is 85; scale to 40 at sideways
-							pUp    = 85 - 45*(fabsf(sin(anaAng)));
-							//default is 65; reduce to 40 at sideways
-							stride = 65 - 25*(fabsf(sin(anaAng)));
-							//start at 100 for 250; move to 30 at 2100
-							cycle = 100 - (anaMag-250.00)*0.03783;
-							//walkEN
-							walkEN = 1;
-							}
-							buildFrameExtd(moveTurn,anaAng,cycle,max_i,walkEN,stance,height,pUp,stride);
-							xSemaphoreGive(FRAMEsem);
-						}
-					}
-				}
-				analogFlag = 0;
-				button = 0;
+				if(extraHgt > EX_HGT_MAX) extraHgt = EX_HGT_MAX;
+				if(extraHgt < EX_HGT_MIN) extraHgt = EX_HGT_MIN;
 			}
 		}
 	}
 }
-
-
-
-
-/*
-void UART4_Handler(void) {
-uint32_t imr = ISI->ISI_IMR;
-char temp;
-uart_read(UART4,&temp);
-CLIbuf[CLIbufIndex] = temp;
-CLIbufIndex++;
-if(temp = "\n") xSemaphoreGiveFromISR(UARTsem,NULL);
-}*/
-
+//done
+void SendSpecTask (void* pvParameters) {
+	CMDFRAMEsem = xSemaphoreCreateBinary();
+	int standing = 0;
+	int surp = 0;
+	char sendbuf[10];
+	for(;;) {
+		if( CMDFRAMEsem !=NULL){
+			if( xSemaphoreTake(CMDFRAMEsem,0xFFFF) == pdTRUE){
+				sendDebugString("sendSpecialFrame\n");
+				if(ButtonStatus&Push1) {
+					sendbuf[0] = 4;
+					if(standing) {
+						standing = 0;
+						sendbuf[1] = 1;
+						sendDebugString("sitDown\n");
+					}
+					else {
+						standing = 1;
+						sendDebugString("standUp\n");
+						sendbuf[1] = 0;
+					}
+				}
+				
+				else if(ButtonStatus&Push2) {
+					sendbuf[0] = 5;
+					if(surp) {
+						surp = 0;
+						sendbuf[1] = 1;
+					}
+					else {
+						surp = 1;
+						sendbuf[1] = 0;
+					}
+				}
+				cmdDWMsend(sendbuf,4);
+			}
+		}
+	}
+}
+//done
 void PIOA_Handler (void) {
-	
 	ButtonStatus = pio_get_interrupt_status(PIOA);
 	ButtonStatus &= pio_get_interrupt_mask(PIOA);
-	xSemaphoreGiveFromISR(PIOAsem,NULL);
+	if(ButtonStatus&Push1 || ButtonStatus&Push2) xSemaphoreGiveFromISR(CMDFRAMEsem,NULL);
+	else {
+		sendDebugString("UpdateSemCalled\n");
+		 xSemaphoreGiveFromISR(PIOAsem,NULL);
+	}
 
 }
+
+
+
+//                       **done functions**
 
 void buildFrame(float Turn,float Dir,int cycle,int max_i,Byte walkEN) {
 	int floatchangeTurn = 0;
@@ -678,7 +366,6 @@ void buildFrame(float Turn,float Dir,int cycle,int max_i,Byte walkEN) {
 	}
 	
 }
-
 void buildFrameExtd(float Turn,float Dir,int cycle,int max_i,Byte walkEN,int stance, int height, int pUp, int stride) {
 	int floatchangeTurn = 0;
 	int floatchangeDir = 0;

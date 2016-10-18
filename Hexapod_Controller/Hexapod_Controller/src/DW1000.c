@@ -479,4 +479,5 @@ void cmdDWMsend(char* tosend, int charlen) {
 	}
 	DW1000_setTxFrameControl( 0x00090000 | 0x7F&charlen  );
 	DW1000_startTx();
+	delay_ms(5);
 }
