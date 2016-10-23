@@ -54,8 +54,11 @@
 #define ANACTRL 1
 #define ANA_THRESH 250
 
-#define EX_HGT_MAX 100
-#define EX_HGT_MIN 0
+#define EX_HGT_MAX 80
+#define EX_HGT_MIN -10
+
+#define EX_STN_MAX 50
+#define EX_STN_MIN -20
 
 
 //define task functions
@@ -96,6 +99,7 @@ int sendlength = 0;
 int wasWalking = 0;
 //adjustable paramiters
 int extraHgt = 0;
+int extraStance = 0;
 /*
 struct spi_device2{
 uint32_t id;
@@ -191,15 +195,23 @@ void BuildFrameTask(void* pvParameters){
 		//sprintf(buf,"buttonState: %8x : %8x\n",buttonState&SW5Left,buttonState&SW5Right);
 		//sendDebugString(buf);
 		if(anaMag > ANA_THRESH || !(buttonState&SW5Left) || !(buttonState&SW5Right)) {
-			if(!(buttonState&SW5Left)) moveTurn = -1;
-			else if(!(buttonState&SW5Right)) moveTurn = 1;
-			else moveTurn = 0.2;
-			
 			if(!(anaMag > ANA_THRESH)) anaAng = 0;
 			
+			if(!(buttonState&SW5Left)) {
+				moveTurn = -1;
+				cycle = 40;
+			}
+			else if(!(buttonState&SW5Right)) {
+				moveTurn = 1;
+				cycle = 40;
+			}
+			else  {
+				moveTurn = 0.2 - 0.2*(fabsf(sin(anaAng)));
+				cycle = 100 - (int)(((float)anaMag-250.00)*0.1);
+			}
 			wasWalking = 5;
 			max_i = 45;
-			stance =  165;
+			stance =  165+extraStance - extraStance*(fabsf(sin(anaAng)));;
 			//default is 20; scale to 100 at sideways
 			height = (20+extraHgt) + (80-extraHgt)*(fabsf(sin(anaAng)));
 			//default is 85; scale to 40 at sideways
@@ -207,7 +219,7 @@ void BuildFrameTask(void* pvParameters){
 			//default is 65; reduce to 40 at sideways
 			stride = 65 - 35*(fabsf(sin(anaAng))) - 0.2*extraHgt;
 			//start at 100 for 250; move to 30 at 2100
-			cycle = 100 - (anaMag-250.00)*0.025;
+			if(cycle < 35) cycle = 35;
 			//walkEN
 			walkEN = 1;
 			buildFrameExtd(moveTurn,anaAng,cycle,max_i,walkEN,stance,height,pUp,stride);
@@ -221,6 +233,7 @@ void BuildFrameTask(void* pvParameters){
 				max_i = 0;
 				walkEN = 0;
 				height = (20+extraHgt);
+				stance =  165+extraStance;
 				buildFrameExtd(moveTurn,anaAng,cycle,max_i,walkEN,stance,height,pUp,stride);
 				sendlength = 35;
 				xSemaphoreGive(FRAMEsem);
@@ -260,6 +273,24 @@ void UpdateTask (void* pvParameters) {
 					extraHgt-=5;
 					wasWalking = 1;
 				}
+				
+				if(ButtonStatus&SW4Left && !(buttonState&SW4Left)) {
+					extraStance-=5;
+					wasWalking = 1;
+				}
+				if(ButtonStatus&SW4Right && !(buttonState&SW4Right)) {
+					extraStance+=5;
+					wasWalking = 1;
+				}
+				if(ButtonStatus&SW4Push && !(buttonState&SW4Push)) {
+					extraStance=0;
+					extraHgt=0;
+					wasWalking = 1;
+				}
+				
+				if(extraStance > EX_STN_MAX) extraStance = EX_STN_MAX;
+				if(extraStance < EX_STN_MIN) extraStance = EX_STN_MIN;
+				
 				if(extraHgt > EX_HGT_MAX) extraHgt = EX_HGT_MAX;
 				if(extraHgt < EX_HGT_MIN) extraHgt = EX_HGT_MIN;
 			}
